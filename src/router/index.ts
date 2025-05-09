@@ -8,11 +8,22 @@ const routes: Array<RouteRecordRaw> = [
     path: '/',
     redirect: '/login'
   },
+
+  // 登录
   {
     path: '/login',
     name: 'Login',
     component: Login
   },
+
+  // 忘记密码
+  {
+    path: '/forgot-password',
+    name: 'ForgotPassword',
+    component: () => import('@/views/user/auth/ForgotPassword.vue')
+  },
+
+  // 用户主页面
   {
     path: '/user/home',
     name: 'UserHome',
