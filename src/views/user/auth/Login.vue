@@ -2,7 +2,8 @@
 <template>
   <div class="login-container">
     <div class="login-header">
-      <img src="@/assets/logo.png" alt="饱了么" class="logo">
+      <!-- 后续替换logo？ -->
+      <!-- <img src="@/assets/logo.png" alt="饱了么" class="logo"> -->
       <h1 class="title">饱了么</h1>
       <p class="slogan">让校园生活更便捷</p>
     </div>
