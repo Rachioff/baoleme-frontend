@@ -83,22 +83,6 @@
               </n-input>
             </n-form-item>
             
-            <n-form-item path="verificationCode" label="验证码">
-              <div class="verification-code">
-                <n-input 
-                  v-model:value="registerForm.verificationCode" 
-                  placeholder="请输入验证码"
-                />
-                <n-button 
-                  :disabled="codeCooldown > 0" 
-                  @click="getVerificationCode"
-                  class="code-btn"
-                >
-                  {{ codeCooldown > 0 ? `重新获取(${codeCooldown}s)` : '获取验证码' }}
-                </n-button>
-              </div>
-            </n-form-item>
-            
             <n-form-item path="password" label="密码">
               <n-input 
                 v-model:value="registerForm.password" 
@@ -279,6 +263,24 @@
         <p>地址：BUAA</p>
       </div>
     </n-modal>
+
+    <!-- 注册成功提示 -->
+    <n-modal
+      v-model:show="registerSuccessVisible"
+      preset="dialog"
+      title="注册成功"
+      positive-text="确定"
+      @positive-click="closeRegisterSuccess"
+    >
+      <template #icon>
+        <n-icon><mail-filled /></n-icon>
+      </template>
+      <div class="register-success-content">
+        <p>我们已向您的邮箱 <strong>{{ registerForm.email }}</strong> 发送了一封验证邮件。</p>
+        <p>请前往邮箱查收并点击邮件中的链接以激活您的账号。</p>
+        <p class="note">注意：激活链接有效期为24小时，请尽快完成激活。</p>
+      </div>
+    </n-modal>
   </div>
 </template>
 
@@ -290,16 +292,16 @@ import {
   LockOutlined, 
   WechatFilled, 
   AlipayCircleFilled,
-  CloseOutlined
+  MailFilled
 } from '@vicons/antd'
 import { FormInst, FormRules } from 'naive-ui'
 
 const router = useRouter()
 const loading = ref(false)
 const rememberMe = ref(false)
-const codeCooldown = ref(0)
 const serviceAgreementVisible = ref(false)
 const privacyPolicyVisible = ref(false)
+const registerSuccessVisible = ref(false)
 
 // 登录表单
 const loginFormRef = ref<FormInst | null>(null)
@@ -312,7 +314,6 @@ const loginForm = reactive({
 const registerFormRef = ref<FormInst | null>(null)
 const registerForm = reactive({
   email: '',
-  verificationCode: '',
   password: '',
   confirmPassword: ''
 })
@@ -334,10 +335,6 @@ const registerRules: FormRules = {
     { required: true, message: '请输入邮箱', trigger: 'blur' },
     { type: 'email', message: '请输入有效的邮箱地址', trigger: 'blur' }
   ],
-  verificationCode: [
-    { required: true, message: '请输入验证码', trigger: 'blur' },
-    { len: 6, message: '验证码为6位数字', trigger: 'blur' }
-  ],
   password: [
     { required: true, message: '请设置密码', trigger: 'blur' },
     { min: 6, max: 20, message: '密码长度为6-20位', trigger: 'blur' },
@@ -351,27 +348,6 @@ const registerRules: FormRules = {
       trigger: 'blur' 
     }
   ]
-}
-
-// 获取验证码
-const getVerificationCode = () => {
-  if (codeCooldown.value > 0) return
-  
-  registerFormRef.value?.validate(['email'], (errors) => {
-    if (!errors) {
-      // 模拟发送验证码
-      codeCooldown.value = 60
-      const timer = setInterval(() => {
-        codeCooldown.value--
-        if (codeCooldown.value <= 0) {
-          clearInterval(timer)
-        }
-      }, 1000)
-      
-      // TODO: 调用发送验证码API
-      console.log('发送验证码到:', registerForm.email)
-    }
-  })
 }
 
 // 登录
@@ -400,10 +376,20 @@ const handleRegister = () => {
       setTimeout(() => {
         loading.value = false
         console.log('注册信息:', registerForm)
-        router.push('/user/home')
+        // 显示注册成功的提示模态窗口
+        registerSuccessVisible.value = true
       }, 1000)
     }
   })
+}
+
+// 关闭注册成功提示
+const closeRegisterSuccess = () => {
+  registerSuccessVisible.value = false
+  // 重置注册表单
+  registerForm.email = ''
+  registerForm.password = ''
+  registerForm.confirmPassword = ''
 }
 
 // 显示协议或政策
@@ -430,11 +416,6 @@ const showAgreement = (type: 'service' | 'privacy') => {
   text-align: center;
   margin-bottom: 30px;
   margin-top: 40px;
-}
-
-.logo {
-  width: 80px;
-  height: 80px;
 }
 
 .title {
@@ -474,17 +455,6 @@ const showAgreement = (type: 'service' | 'privacy') => {
   font-size: 16px;
   font-weight: 500;
   background-color: #ff6b01;
-}
-
-.verification-code {
-  display: flex;
-  gap: 12px;
-}
-
-.code-btn {
-  width: 120px;
-  white-space: nowrap;
-  font-size: 14px;
 }
 
 .other-login {
@@ -537,5 +507,45 @@ const showAgreement = (type: 'service' | 'privacy') => {
   max-height: 70vh;
   overflow-y: auto;
   padding: 0 10px;
+}
+
+.agreement-content h3 {
+  text-align: center;
+  margin-bottom: 8px;
+}
+
+.agreement-date {
+  text-align: center;
+  color: #999;
+  margin-bottom: 20px;
+  font-size: 14px;
+}
+
+.agreement-content h4 {
+  margin-top: 24px;
+  margin-bottom: 12px;
+  font-size: 16px;
+}
+
+.agreement-content p {
+  line-height: 1.8;
+  margin-bottom: 12px;
+  font-size: 14px;
+  color: #333;
+}
+
+.register-success-content {
+  padding: 10px 0;
+}
+
+.register-success-content p {
+  margin-bottom: 12px;
+  line-height: 1.6;
+}
+
+.register-success-content .note {
+  font-size: 14px;
+  color: #ff6b01;
+  margin-top: 16px;
 }
 </style>
