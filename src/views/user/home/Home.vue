@@ -115,26 +115,6 @@
       </div>
     </div>
 
-    <!-- 底部导航栏 (这里只是占位，实际在App.vue中实现) -->
-    <div class="bottom-navigation">
-      <div class="nav-item active">
-        <n-icon size="20"><home-filled /></n-icon>
-        <span>首页</span>
-      </div>
-      <div class="nav-item" @click="router.push('/orders')">
-        <n-icon size="20"><file-text-outlined /></n-icon>
-        <span>订单</span>
-      </div>
-      <div class="nav-item" @click="router.push('/cart')">
-        <n-icon size="20"><shopping-cart-outlined /></n-icon>
-        <span>购物车</span>
-      </div>
-      <div class="nav-item" @click="router.push('/user/profile')">
-        <n-icon size="20"><user-outlined /></n-icon>
-        <span>我的</span>
-      </div>
-    </div>
-
     <!-- 位置选择模态框 -->
     <n-modal
       v-model:show="showLocationPicker"
@@ -696,36 +676,6 @@ onMounted(() => {
   color: #999;
 }
 
-/* 底部导航栏样式 */
-.bottom-navigation {
-  position: fixed;
-  bottom: 0;
-  left: 0;
-  right: 0;
-  display: flex;
-  justify-content: space-around;
-  align-items: center;
-  height: 56px;
-  background-color: white;
-  box-shadow: 0 -2px 8px rgba(0, 0, 0, 0.05);
-  z-index: 100;
-}
-
-.nav-item {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  font-size: 12px;
-  color: #999;
-}
-
-.nav-item.active {
-  color: #ff6b01;
-}
-
-.nav-item span {
-  margin-top: 2px;
-}
 
 /* 位置选择模态框样式 */
 .location-list {
