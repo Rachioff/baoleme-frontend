@@ -7,13 +7,15 @@
       </div>
     </n-message-provider>
   </n-config-provider>
+  <!-- 自定义滚动条元素 -->
+  <div id="custom-scrollbar"></div>
 </template>
 
 <script setup lang="ts">
 import { NConfigProvider, NMessageProvider } from 'naive-ui'
 import BottomNavigation from './components/layout/BottomNavigation.vue'
 import { useRoute } from 'vue-router'
-import { computed } from 'vue'
+import { computed, onMounted, onUnmounted } from 'vue'
 
 const route = useRoute()
 
@@ -29,6 +31,77 @@ const showBottomNav = computed(() => {
   ]
   return !hideNavRoutes.includes(route.path)
 })
+
+// 滚动条相关逻辑
+onMounted(() => {
+  // 获取自定义滚动条元素
+  const scrollbar = document.getElementById('custom-scrollbar');
+  
+  // 隐藏原生滚动条但保留滚动功能
+  document.documentElement.style.scrollbarWidth = 'none'; // Firefox
+  document.documentElement.style.msOverflowStyle = 'none'; // IE
+  
+  // 添加滚动事件监听
+  let scrollTimer: number | null = null;
+  let isScrolling = false;
+
+  const updateScrollbar = () => {
+    if (!scrollbar) return;
+    
+    // 计算滚动条高度和位置
+    const windowHeight = window.innerHeight;
+    const documentHeight = document.documentElement.scrollHeight;
+    const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+    
+    // 只有当有可滚动内容时才显示滚动条
+    if (documentHeight > windowHeight) {
+      // 计算滚动条高度比例
+      const scrollbarHeight = (windowHeight / documentHeight) * windowHeight;
+      // 计算滚动条位置
+      const scrollbarTop = (scrollTop / (documentHeight - windowHeight)) * (windowHeight - scrollbarHeight);
+      
+      // 设置滚动条样式
+      scrollbar.style.height = `${scrollbarHeight}px`;
+      scrollbar.style.top = `${scrollbarTop}px`;
+      
+      // 滚动时显示滚动条
+      if (isScrolling) {
+        scrollbar.style.opacity = '1';
+      }
+    } else {
+      // 没有可滚动内容，隐藏滚动条
+      scrollbar.style.opacity = '0';
+    }
+  };
+
+  const handleScroll = () => {
+    isScrolling = true;
+    updateScrollbar();
+    
+    // 清除之前的定时器
+    if (scrollTimer) clearTimeout(scrollTimer);
+    
+    // 设置新定时器，滚动停止后隐藏滚动条
+    scrollTimer = window.setTimeout(() => {
+      isScrolling = false;
+      if (scrollbar) scrollbar.style.opacity = '0';
+    }, 1000);
+  };
+
+  // 初始化滚动条位置
+  updateScrollbar();
+  
+  // 添加事件监听
+  window.addEventListener('scroll', handleScroll);
+  window.addEventListener('resize', updateScrollbar);
+  
+  // 组件卸载时的清理函数
+  onUnmounted(() => {
+    window.removeEventListener('scroll', handleScroll);
+    window.removeEventListener('resize', updateScrollbar);
+    if (scrollTimer) clearTimeout(scrollTimer);
+  });
+});
 </script>
 
 <style>
@@ -38,9 +111,11 @@ const showBottomNav = computed(() => {
   box-sizing: border-box;
 }
 
-html {
-  overflow-y: scroll; /* 始终显示滚动条 */
-  scrollbar-gutter: stable; /* 为滚动条保留空间，防止布局偏移 */
+/* 隐藏原生滚动条但保留滚动功能 */
+html::-webkit-scrollbar {
+  width: 0;
+  height: 0;
+  display: none;
 }
 
 body {
@@ -49,6 +124,8 @@ body {
   -moz-osx-font-smoothing: grayscale;
   background-color: #f5f5f5;
   color: #333;
+  /* 使滚动平滑 */
+  scroll-behavior: smooth;
 }
 
 #app {
@@ -74,22 +151,23 @@ body {
   }
 }
 
-/* 滚动条样式 */
-::-webkit-scrollbar {
+/* 自定义滚动条样式 */
+#custom-scrollbar {
+  position: fixed;
+  top: 0;
+  right: 4px;
   width: 8px;
-  height: 8px;
-}
-
-::-webkit-scrollbar-track {
-  background: #f1f1f1;
-}
-
-::-webkit-scrollbar-thumb {
-  background: #ddd;
+  height: 100px; /* 初始高度，将被JS动态调整 */
   border-radius: 4px;
+  background-color: rgba(0, 0, 0, 0.3);
+  opacity: 0;
+  transition: opacity 0.3s ease;
+  z-index: 10000;
+  pointer-events: none; /* 不拦截鼠标事件 */
 }
 
-::-webkit-scrollbar-thumb:hover {
-  background: #ccc;
+/* 悬停效果 - 虽然不能直接点击，但当鼠标移到右侧时可以稍微加深颜色 */
+#custom-scrollbar:hover {
+  background-color: rgba(0, 0, 0, 0.5);
 }
 </style>
