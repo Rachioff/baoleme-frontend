@@ -32,7 +32,7 @@ const navItems = ref([
   { 
     label: '首页', 
     icon: HomeFilled, 
-    path: '/user/home' 
+    path: '/customer/home' 
   },
   { 
     label: '订单', 
@@ -47,7 +47,7 @@ const navItems = ref([
   { 
     label: '我的', 
     icon: UserOutlined, 
-    path: '/user/profile' 
+    path: '/customer/profile' 
   }
 ]);
 

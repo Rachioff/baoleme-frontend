@@ -1,4 +1,4 @@
-<!-- src/views/user/auth/ForgotPassword.vue -->
+<!-- src/views/customer/auth/ForgotPassword.vue -->
 <template>
   <div class="forgot-password-container">
     <div class="header">

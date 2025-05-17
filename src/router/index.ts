@@ -1,7 +1,7 @@
 // src/router/index.ts
 import { createRouter, createWebHistory } from 'vue-router'
 import type { RouteRecordRaw } from 'vue-router'
-import Login from '@/views/user/auth/Login.vue'
+import Login from '@/views/customer/auth/Login.vue'
 
 const routes: Array<RouteRecordRaw> = [
   {
@@ -20,15 +20,15 @@ const routes: Array<RouteRecordRaw> = [
   {
     path: '/forgot-password',
     name: 'ForgotPassword',
-    component: () => import('@/views/user/auth/ForgotPassword.vue')
+    component: () => import('@/views/customer/auth/ForgotPassword.vue')
   },
 
   // 用户主页面
   {
-    path: '/user/home',
-    name: 'UserHome',
+    path: '/customer/home',
+    name: 'CustomerHome',
     // 使用懒加载
-    component: () => import('@/views/user/home/Home.vue')
+    component: () => import('@/views/customer/home/Home.vue')
   }
   // 其他路由将在后续添加
 ]

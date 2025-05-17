@@ -1,4 +1,4 @@
-<!-- src/views/user/auth/Login.vue -->
+<!-- src/views/customer/auth/Login.vue -->
 <template>
   <div class="login-container">
     <div class="login-header">
@@ -70,6 +70,7 @@
             :model="registerForm"
             :rules="registerRules"
             label-placement="left"
+            :label-width="80"
             @keydown.enter="handleRegister"
           >
             <n-form-item path="email" label="邮箱">
@@ -360,7 +361,7 @@ const handleLogin = () => {
       setTimeout(() => {
         loading.value = false
         console.log('登录信息:', loginForm)
-        router.push('/user/home')
+        router.push('/customer/home')
       }, 1000)
     }
   })
