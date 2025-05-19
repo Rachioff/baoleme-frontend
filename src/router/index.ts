@@ -29,8 +29,14 @@ const routes: Array<RouteRecordRaw> = [
     name: 'CustomerHome',
     // 使用懒加载
     component: () => import('@/views/customer/home/Home.vue')
-  }
+  },
   // 其他路由将在后续添加
+  {
+    path: '/user/:userId',
+    name: 'UserProfile',
+    component: () => import('@/views/user/UserView.vue'),
+    props: true
+  }
 ]
 
 const router = createRouter({
