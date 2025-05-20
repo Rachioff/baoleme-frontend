@@ -4,7 +4,7 @@
             <template #header-extra>
                 <n-tag type="info">{{ order.status }}</n-tag>
             </template>
-            <div class="order-card-info" @click="getOrderInfo(order.id)">
+            <div class="order-card-info" @click="getOrderItem(order.id)">
                 <n-space align="start" :wrap="false" size="large">
                     <!-- 左侧：头像与店铺信息 -->
                     <div class="order-left">
@@ -46,9 +46,9 @@
 </template>
 
 <script setup lang="ts">
-import Order from '@/views/customer/order/Order.vue'
 import { ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
+import { type OrderItem } from '@/types/order'
 
 const route = useRoute()
 const router = useRouter()
@@ -60,23 +60,9 @@ const isShowTimeline = (status: string) => {
     return false
 }
 // 组件参数
-
-
-
-interface OrderInfo {
-    id: number
-    storeName: string
-    storeAvatar: string
-    orderTime: string
-    time: string
-    items: string[]
-    total: number
-    status: string
-}
-
 const { order } = defineProps({
     order: {
-        type: Object as () => OrderInfo,
+        type: Object as () => OrderItem,
         required: true
     }
 })
@@ -117,32 +103,36 @@ const steps = [
 
 const currentStep = ref(3) // 当前步骤索引
 
-const getOrderInfo = (id: number) => {
+const getOrderItem = (id: number) => {
     console.log('获取订单详情', id)
     if (route.path != null) {
-        router.push({ path: '../component/result/404.vue', query: { id } })
+        router.push({ path: '/customer/order/:id', query: { id } }) // 添加路由参数
     }
 }
 
 // TODO：按钮逻辑
-const evaluate = (order: OrderInfo) => {
+const evaluate = (order: OrderItem) => {
     // 跳转评价页面或弹出评价窗口
     console.log('评价', order)
+    alert("Not implemented")
 }
 
-const viewInvoice = (order: OrderInfo) => {
+const viewInvoice = (order: OrderItem) => {
     // 打开发票详情
     console.log('查看发票', order)
+    alert("Not implemented")
 }
 
-const deleteOrder = (order: OrderInfo) => {
+const deleteOrder = (order: OrderItem) => {
     // 弹出确认框并删除
     console.log('删除订单', order)
+    alert("Not implemented")
 }
 
-const buyAgain = (order: OrderInfo) => {
+const buyAgain = (order: OrderItem) => {
     // 跳转购买流程
     console.log('再次购买', order)
+    alert("Not implemented")
 }
 
 

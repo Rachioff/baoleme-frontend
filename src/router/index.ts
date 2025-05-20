@@ -35,8 +35,25 @@ const routes: Array<RouteRecordRaw> = [
     path: '/customer/order',
     name: 'CustomerOrder',
     component: () => import('@/views/customer/order/Order.vue')
+  },
+  // 订单详情，路由参数和api匹配
+  {
+    path: '/customer/order/:id',
+    name: 'OrderDetail',
+    component: () => import('@/views/customer/order/OrderInfo.vue')
+  },
+  // 测试页面
+  {
+    path: '/test',
+    name: 'Test',
+    component: () => import('@/views/test/Test.vue')
+  },
+  // 结果 404
+  {
+    path: '/:catchAll(.*)*',
+    name: 'NotFound',
+    component: () => import('@/views/result/404.vue')
   }
-
 ]
 
 const router = createRouter({
