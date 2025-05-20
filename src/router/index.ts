@@ -2,6 +2,7 @@
 import { createRouter, createWebHistory } from 'vue-router'
 import type { RouteRecordRaw } from 'vue-router'
 import Login from '@/views/customer/auth/Login.vue'
+import { defineAsyncComponent } from 'vue'
 
 const routes: Array<RouteRecordRaw> = [
   {
@@ -53,6 +54,12 @@ const routes: Array<RouteRecordRaw> = [
     path: '/:catchAll(.*)*',
     name: 'NotFound',
     component: () => import('@/views/result/404.vue')
+  },
+  {
+    path: '/user/:userId',
+    name: 'UserProfile',
+    component: () => import('@/views/user/UserView.vue'),
+    props: true
   }
 ]
 
