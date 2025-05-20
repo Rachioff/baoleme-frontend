@@ -43,15 +43,34 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, watch } from 'vue'
+import { ref, computed, watch, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { NTabs, NTabPane, NSpace } from 'naive-ui'
 import OrderCard from '@/components/card/OrderCard.vue'
 import { SearchOutlined } from '@vicons/antd'
+import { fetchOrders } from '@/api/orders'
+import { type OrderItem } from '@/types/order' // 导入数据类型
 
 const route = useRoute()
 const router = useRouter()
+
+// 加载数据
+// const orders = ref<OrderItem[]>([])
+const total = ref(0)
 const page = ref(2)
+const pageSize = 5
+
+// async function loadOrders() {
+//   const res = await fetchOrders(page.value, pageSize)
+//   if (res.data.code === 0) {
+//     orders.value = res.data.data.orders
+//     total.value = res.data.data.total
+//   } else {
+//     console.error('Failed to fetch orders:', res.data.message)
+//     alert('获取订单失败')
+//   }
+// }
+// onMounted(loadOrders)
 
 // TODO :模拟订单数据
 const orders = ref([
@@ -170,6 +189,7 @@ const filteredOrders = computed(() => {
   }
   if (currentTab.value === 'category') {
     // TODO: 分类页暂做占位处理
+    alert('分类页暂做占位处理')
     return []
   }
   return orders.value
@@ -178,7 +198,7 @@ const filteredOrders = computed(() => {
 // TODO: 分页功能
 // 数据 pageOrders
 // 当前页数 page
-const pageSize = 5
+// const pageSize = 5
 
 const pageCount = computed(() => {
   Math.ceil(orders.value.length / pageSize)
@@ -192,20 +212,8 @@ const currentPageOrders = computed(() => {
 function handlePageChange(newPage: number) {
   page.value = newPage
 }
-// function fetchOrders() {
-//   // 这里只是 mock 数据
-//   allOrders.value = Array.from({ length: 48 }, (_, i) => ({
-//     id: i + 1,
-//     storeName: `店铺 #${i + 1}`,
-//     storeAvatar: '',
-//     orderTime: '2025-05-19 10:00',
-//     time: '2025-05-19 09:30',
-//     items: ['商品A', '商品B'],
-//     total: 66.6
-//   }))
-// }
 
-// fetchOrders()
+
 </script>
 
 <style scoped>
