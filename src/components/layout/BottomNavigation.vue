@@ -37,7 +37,7 @@ const navItems = ref([
   { 
     label: '订单', 
     icon: FileTextOutlined, 
-    path: '/orders' 
+    path: '/customer/order' 
   },
   { 
     label: '购物车', 
