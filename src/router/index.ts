@@ -2,6 +2,7 @@
 import { createRouter, createWebHistory } from 'vue-router'
 import type { RouteRecordRaw } from 'vue-router'
 import Login from '@/views/customer/auth/Login.vue'
+import { defineAsyncComponent } from 'vue'
 
 const routes: Array<RouteRecordRaw> = [
   {

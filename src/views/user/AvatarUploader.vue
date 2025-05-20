@@ -1,17 +1,17 @@
 <script setup lang="ts">
-import { NFlex, NButton, NUpload, NImage, type UploadFileInfo } from 'naive-ui'
+import { apiRoot } from '@/config/api';
+import { useTokenStore } from '@/stores/token';
+import { NFlex, NButton, NUpload, NImage, type UploadFileInfo, NCard, useMessage } from 'naive-ui'
 
 interface Props {
-    imageSrc: string
-    uploadUrl: string
-    uploadName: string
-    uploadMethod: string
-    token: string
+    userId?: string
+    imageSrc?: string
 }
 const props = defineProps<Props>()
+const tokenStore = useTokenStore()
+const message = useMessage()
 const emit = defineEmits<{
     (e: 'finish', originLink: string, thumbnailLink: string): void
-    (e: 'error', message: string): void
 }>()
 const handleFinished = ({ file, event } : { file: UploadFileInfo, event?: ProgressEvent }) => {
     const response = (event?.target as XMLHttpRequest).response
@@ -21,32 +21,36 @@ const handleError = ({ file, event } : { file: UploadFileInfo, event?: ProgressE
     const response = (event?.target as XMLHttpRequest).response
     const status = (event?.target as XMLHttpRequest).status
     if (status === 413) {
-        emit('error', '上传失败，文件过大')
+        message.error('上传失败，文件过大')
         return
     }
-    emit('error', response.message)
+    message.error(response.message)
 }
 
 </script>
 
 <template>
-    <div id="container">
-        <n-flex vertical>
+    <n-card id="container" style="width: 400px;">
+        <n-flex vertical style="width: 100%;" align="center">
             <n-image 
                 :src="imageSrc"
+                :width="320"
+                :height="320"
             />
             <n-upload
-                :action="uploadUrl"
-                :name="uploadName"
-                :headers="{ Authorization: `Bearer ${token}` }"
-                :method="uploadMethod"
+                :action="`${apiRoot}/user/${props.userId}/avatar`"
+                accept="image/*"
+                name="avatar"
+                :headers="{ Authorization: `Bearer ${tokenStore.token}` }"
+                method="PATCH"
                 response-type="json"
                 :show-file-list="false"
                 @finish="handleFinished"
                 @error="handleError"
+                style="display: flex; justify-content: center;"
             >
-                <n-button>上传头像</n-button>
+                <n-button style="align-self: center;">上传头像</n-button>
             </n-upload>
         </n-flex>
-    </div>
+    </n-card>
 </template>
