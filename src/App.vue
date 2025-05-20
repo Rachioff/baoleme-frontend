@@ -1,10 +1,12 @@
 <template>
   <n-config-provider>
     <n-message-provider>
-      <div class="app-container">
-        <router-view></router-view>
-        <bottom-navigation v-if="showBottomNav" />
-      </div>
+      <n-dialog-provider>
+        <div class="app-container">
+          <router-view></router-view>
+          <bottom-navigation v-if="showBottomNav" />
+        </div>
+      </n-dialog-provider>
     </n-message-provider>
   </n-config-provider>
   <!-- 自定义滚动条元素 -->
@@ -36,34 +38,34 @@ const showBottomNav = computed(() => {
 onMounted(() => {
   // 获取自定义滚动条元素
   const scrollbar = document.getElementById('custom-scrollbar');
-  
+
   // 隐藏原生滚动条但保留滚动功能
   document.documentElement.style.scrollbarWidth = 'none'; // Firefox
   document.documentElement.style.msOverflowStyle = 'none'; // IE
-  
+
   // 添加滚动事件监听
   let scrollTimer: number | null = null;
   let isScrolling = false;
 
   const updateScrollbar = () => {
     if (!scrollbar) return;
-    
+
     // 计算滚动条高度和位置
     const windowHeight = window.innerHeight;
     const documentHeight = document.documentElement.scrollHeight;
     const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
-    
+
     // 只有当有可滚动内容时才显示滚动条
     if (documentHeight > windowHeight) {
       // 计算滚动条高度比例
       const scrollbarHeight = (windowHeight / documentHeight) * windowHeight;
       // 计算滚动条位置
       const scrollbarTop = (scrollTop / (documentHeight - windowHeight)) * (windowHeight - scrollbarHeight);
-      
+
       // 设置滚动条样式
       scrollbar.style.height = `${scrollbarHeight}px`;
       scrollbar.style.top = `${scrollbarTop}px`;
-      
+
       // 滚动时显示滚动条
       if (isScrolling) {
         scrollbar.style.opacity = '1';
@@ -77,10 +79,10 @@ onMounted(() => {
   const handleScroll = () => {
     isScrolling = true;
     updateScrollbar();
-    
+
     // 清除之前的定时器
     if (scrollTimer) clearTimeout(scrollTimer);
-    
+
     // 设置新定时器，滚动停止后隐藏滚动条
     scrollTimer = window.setTimeout(() => {
       isScrolling = false;
@@ -90,11 +92,11 @@ onMounted(() => {
 
   // 初始化滚动条位置
   updateScrollbar();
-  
+
   // 添加事件监听
   window.addEventListener('scroll', handleScroll);
   window.addEventListener('resize', updateScrollbar);
-  
+
   // 组件卸载时的清理函数
   onUnmounted(() => {
     window.removeEventListener('scroll', handleScroll);
@@ -136,7 +138,8 @@ body {
 .app-container {
   width: 100%;
   min-height: 100vh;
-  padding-bottom: 56px; /* 为底部导航腾出空间，与导航栏高度一致 */
+  padding-bottom: 56px;
+  /* 为底部导航腾出空间，与导航栏高度一致 */
 }
 
 /* 在不显示底部导航的页面，移除底部内边距 */
@@ -157,13 +160,15 @@ body {
   top: 0;
   right: 4px;
   width: 8px;
-  height: 100px; /* 初始高度，将被JS动态调整 */
+  height: 100px;
+  /* 初始高度，将被JS动态调整 */
   border-radius: 4px;
   background-color: rgba(0, 0, 0, 0.3);
   opacity: 0;
   transition: opacity 0.3s ease;
   z-index: 10000;
-  pointer-events: none; /* 不拦截鼠标事件 */
+  pointer-events: none;
+  /* 不拦截鼠标事件 */
 }
 
 /* 悬停效果 - 虽然不能直接点击，但当鼠标移到右侧时可以稍微加深颜色 */

@@ -37,7 +37,19 @@ const routes: Array<RouteRecordRaw> = [
     name: 'UserProfile',
     component: () => import('@/views/user/UserView.vue'),
     props: true
-  }
+  },
+  // 订单
+  {
+    path: '/customer/order',
+    name: 'CustomerOrder',
+    component: () => import('@/views/customer/order/Order.vue')
+  },
+  // 订单详情，路由参数和api匹配
+  {
+    path: '/customer/order/:id',
+    name: 'OrderDetail',
+    component: () => import('@/views/customer/order/OrderInfo.vue')
+  },
 ]
 
 const router = createRouter({
