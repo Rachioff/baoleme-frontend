@@ -3,12 +3,13 @@ import { getUser } from '@/api/user';
 import { useTokenStore } from '@/stores/token';
 import { getDisplayUserName, getDisplayUserRole, type UserData, type UserProfile, type UserRole } from '@/types/user';
 import { AxiosError } from 'axios';
-import { NCard, NFlex, NAvatar, NLayout, NLayoutSider, NList, NListItem, NButton, useMessage, NModal } from 'naive-ui'
+import { NCard, NFlex, NAvatar, NLayout, NLayoutSider, NList, NListItem, NButton, useMessage, NModal, NIcon } from 'naive-ui'
 import AvatarUploader from './AvatarUploader.vue'
 import ProfileEditor from './ProfileEditor.vue'
 import EmailEditor from './EmailEditor.vue';
 import { computed, ref, type Ref } from 'vue'
 import { useRouter } from 'vue-router';
+import { HistoryOutlined, StarOutlined } from '@vicons/antd'
 interface Props {
     userId: string
 }
@@ -92,11 +93,18 @@ const handleAvatarClicked = () => {
                         </n-list-item>
                     </n-list>
                 </n-layout>
+                <n-flex justify="center">
+                    <n-button type="primary" v-if="isCurrentUser || tokenStore.admin" @click="showProfileEditor = true">编辑资料</n-button>
+                    <n-button type="primary" v-if="isCurrentUser" @click="showEmailEditor = true">修改邮箱</n-button>
+                </n-flex>
             </n-card>
-            <n-flex>
-                <n-button type="primary" v-if="isCurrentUser || tokenStore.admin" @click="showProfileEditor = true">编辑资料</n-button>
-                <n-button type="primary" v-if="isCurrentUser" @click="showEmailEditor = true">修改邮箱</n-button>
-            </n-flex>
+            <n-card class="card" v-if="isCurrentUser" id="action-card">
+                <!--TODO-->
+                <n-flex justify="center">
+                    <n-button><template #icon><n-icon><history-outlined/></n-icon></template>历史记录</n-button>
+                    <n-button><template #icon><n-icon><star-outlined/></n-icon></template>收藏夹</n-button>
+                </n-flex>
+            </n-card>
             <n-modal v-model:show="showAvatarUploader">
                 <avatar-uploader
                     :user-id="isCurrentUser ? '00000000-0000-0000-0000-000000000000' : props.userId"
