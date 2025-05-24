@@ -60,6 +60,16 @@ const routes: Array<RouteRecordRaw> = [
     name: 'UserProfile',
     component: () => import('@/views/user/UserView.vue'),
     props: true
+  },
+  {
+    path: '/customer/order/submit',
+    name: 'OrderSubmit',
+    component: () => import('@/views/customer/order/OrderSubmit.vue')
+  },
+  {
+    path: '/order/getsubmit',
+    name: 'GetOrderSubmit',
+    component: () => import('@/views/customer/order/GetOrder.vue')
   }
 ]
 
