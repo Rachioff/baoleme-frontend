@@ -19,9 +19,9 @@
                     <div class="store-link">店铺链接 →</div>
                     <div class="detail-wrapper">
                         <div class="actions">
-                            <n-button strong size="small">评价</n-button>
-                            <n-button strong size="small" secondary>再次购买</n-button>
-                            <n-button strong size="small" tertiary type="error">反馈</n-button>
+                            <n-button strong size="small" @click="evaluate(order)">评价</n-button>
+                            <n-button strong size="small" secondary @click="buyAgain(order)">再次购买</n-button>
+                            <n-button strong size="small" tertiary type="error" @click="feedback(order)">反馈</n-button>
                         </div>
 
                         <n-collapse class="order-info-collapse">
@@ -152,8 +152,18 @@ function handlePageChange(newPage: number) {
 const route = useRoute()
 const orderId = route.params.id || '12345678'
 
-// 数据
+// TODO: 功能按钮
+const evaluate = (order: OrderDetail) => {
+    alert('Not implemented yet')
+}
 
+const buyAgain = (order: OrderDetail) => {
+    alert('Not implemented yet')
+}
+
+const feedback = (order: OrderDetail) => {
+    alert('Not implemented yet')
+}
 </script>
 
 <style scoped>
