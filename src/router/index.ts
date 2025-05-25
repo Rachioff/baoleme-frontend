@@ -50,6 +50,18 @@ const routes: Array<RouteRecordRaw> = [
     name: 'OrderDetail',
     component: () => import('@/views/customer/order/OrderInfo.vue')
   },
+    // 搜索页面
+  {
+    path: '/search',
+    name: 'Search',
+    component: () => import('@/views/customer/search/Search.vue'),
+  },
+  // 搜索结果页面
+  {
+    path: '/search/result',
+    name: 'SearchResult',
+    component: () => import('@/views/customer/search/SearchResult.vue'),
+  }
 ]
 
 const router = createRouter({
