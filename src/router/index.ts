@@ -1,23 +1,60 @@
+// src/router/index.ts
 import { createRouter, createWebHistory } from 'vue-router'
-import HomeView from '../views/HomeView.vue'
+import type { RouteRecordRaw } from 'vue-router'
+import Login from '@/views/customer/auth/Login.vue'
+import { defineAsyncComponent } from 'vue'
+
+const routes: Array<RouteRecordRaw> = [
+  {
+    path: '/',
+    redirect: '/login'
+  },
+
+  // 登录
+  {
+    path: '/login',
+    name: 'Login',
+    component: Login
+  },
+
+  // 忘记密码
+  {
+    path: '/forgot-password',
+    name: 'ForgotPassword',
+    component: () => import('@/views/customer/auth/ForgotPassword.vue')
+  },
+
+  // 用户主页面
+  {
+    path: '/customer/home',
+    name: 'CustomerHome',
+    // 使用懒加载
+    component: () => import('@/views/customer/home/Home.vue')
+  },
+  // 其他路由将在后续添加
+  {
+    path: '/user/:userId',
+    name: 'UserProfile',
+    component: () => import('@/views/user/UserView.vue'),
+    props: true
+  },
+  // 订单
+  {
+    path: '/customer/order',
+    name: 'CustomerOrder',
+    component: () => import('@/views/customer/order/Order.vue')
+  },
+  // 订单详情，路由参数和api匹配
+  {
+    path: '/customer/order/:id',
+    name: 'OrderDetail',
+    component: () => import('@/views/customer/order/OrderInfo.vue')
+  },
+]
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
-  routes: [
-    {
-      path: '/',
-      name: 'home',
-      component: HomeView,
-    },
-    {
-      path: '/about',
-      name: 'about',
-      // route level code-splitting
-      // this generates a separate chunk (About.[hash].js) for this route
-      // which is lazy-loaded when the route is visited.
-      component: () => import('../views/AboutView.vue'),
-    },
-  ],
+  routes
 })
 
 export default router

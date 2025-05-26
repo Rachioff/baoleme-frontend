@@ -1,85 +1,178 @@
-<script setup lang="ts">
-import { RouterLink, RouterView } from 'vue-router'
-import HelloWorld from './components/HelloWorld.vue'
-</script>
-
 <template>
-  <header>
-    <img alt="Vue logo" class="logo" src="@/assets/logo.svg" width="125" height="125" />
-
-    <div class="wrapper">
-      <HelloWorld msg="You did it!" />
-
-      <nav>
-        <RouterLink to="/">Home</RouterLink>
-        <RouterLink to="/about">About</RouterLink>
-      </nav>
-    </div>
-  </header>
-
-  <RouterView />
+  <n-config-provider>
+    <n-message-provider>
+      <n-dialog-provider>
+        <div class="app-container">
+          <router-view></router-view>
+          <bottom-navigation v-if="showBottomNav" />
+        </div>
+      </n-dialog-provider>
+    </n-message-provider>
+  </n-config-provider>
+  <!-- 自定义滚动条元素 -->
+  <div id="custom-scrollbar"></div>
 </template>
 
-<style scoped>
-header {
-  line-height: 1.5;
-  max-height: 100vh;
+<script setup lang="ts">
+import { NConfigProvider, NMessageProvider } from 'naive-ui'
+import BottomNavigation from './components/layout/BottomNavigation.vue'
+import { useRoute } from 'vue-router'
+import { computed, onMounted, onUnmounted } from 'vue'
+
+const route = useRoute()
+
+// 控制底部导航栏显示的逻辑
+// 在登录、注册等页面不显示底部导航
+const showBottomNav = computed(() => {
+  // 不需要显示底部导航的路由列表
+  const hideNavRoutes = [
+    '/',
+    '/login',
+    '/register',
+    '/forgot-password'
+  ]
+  return !hideNavRoutes.includes(route.path)
+})
+
+// 滚动条相关逻辑
+onMounted(() => {
+  // 获取自定义滚动条元素
+  const scrollbar = document.getElementById('custom-scrollbar');
+
+  // 隐藏原生滚动条但保留滚动功能
+  document.documentElement.style.scrollbarWidth = 'none'; // Firefox
+  document.documentElement.style.msOverflowStyle = 'none'; // IE
+
+  // 添加滚动事件监听
+  let scrollTimer: number | null = null;
+  let isScrolling = false;
+
+  const updateScrollbar = () => {
+    if (!scrollbar) return;
+
+    // 计算滚动条高度和位置
+    const windowHeight = window.innerHeight;
+    const documentHeight = document.documentElement.scrollHeight;
+    const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+
+    // 只有当有可滚动内容时才显示滚动条
+    if (documentHeight > windowHeight) {
+      // 计算滚动条高度比例
+      const scrollbarHeight = (windowHeight / documentHeight) * windowHeight;
+      // 计算滚动条位置
+      const scrollbarTop = (scrollTop / (documentHeight - windowHeight)) * (windowHeight - scrollbarHeight);
+
+      // 设置滚动条样式
+      scrollbar.style.height = `${scrollbarHeight}px`;
+      scrollbar.style.top = `${scrollbarTop}px`;
+
+      // 滚动时显示滚动条
+      if (isScrolling) {
+        scrollbar.style.opacity = '1';
+      }
+    } else {
+      // 没有可滚动内容，隐藏滚动条
+      scrollbar.style.opacity = '0';
+    }
+  };
+
+  const handleScroll = () => {
+    isScrolling = true;
+    updateScrollbar();
+
+    // 清除之前的定时器
+    if (scrollTimer) clearTimeout(scrollTimer);
+
+    // 设置新定时器，滚动停止后隐藏滚动条
+    scrollTimer = window.setTimeout(() => {
+      isScrolling = false;
+      if (scrollbar) scrollbar.style.opacity = '0';
+    }, 1000);
+  };
+
+  // 初始化滚动条位置
+  updateScrollbar();
+
+  // 添加事件监听
+  window.addEventListener('scroll', handleScroll);
+  window.addEventListener('resize', updateScrollbar);
+
+  // 组件卸载时的清理函数
+  onUnmounted(() => {
+    window.removeEventListener('scroll', handleScroll);
+    window.removeEventListener('resize', updateScrollbar);
+    if (scrollTimer) clearTimeout(scrollTimer);
+  });
+});
+</script>
+
+<style>
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
 }
 
-.logo {
-  display: block;
-  margin: 0 auto 2rem;
+/* 隐藏原生滚动条但保留滚动功能 */
+html::-webkit-scrollbar {
+  width: 0;
+  height: 0;
+  display: none;
 }
 
-nav {
+body {
+  font-family: 'PingFang SC', 'Microsoft YaHei', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  background-color: #f5f5f5;
+  color: #333;
+  /* 使滚动平滑 */
+  scroll-behavior: smooth;
+}
+
+#app {
   width: 100%;
-  font-size: 12px;
-  text-align: center;
-  margin-top: 2rem;
+  min-height: 100vh;
 }
 
-nav a.router-link-exact-active {
-  color: var(--color-text);
+.app-container {
+  width: 100%;
+  min-height: 100vh;
+  padding-bottom: 56px;
+  /* 为底部导航腾出空间，与导航栏高度一致 */
 }
 
-nav a.router-link-exact-active:hover {
-  background-color: transparent;
+/* 在不显示底部导航的页面，移除底部内边距 */
+.app-container:has(> .bottom-navigation:not([data-v-shown])) {
+  padding-bottom: 0;
 }
 
-nav a {
-  display: inline-block;
-  padding: 0 1rem;
-  border-left: 1px solid var(--color-border);
-}
-
-nav a:first-of-type {
-  border: 0;
-}
-
-@media (min-width: 1024px) {
-  header {
-    display: flex;
-    place-items: center;
-    padding-right: calc(var(--section-gap) / 2);
+/* 移动端适配 */
+@media (max-width: 768px) {
+  html {
+    font-size: 14px;
   }
+}
 
-  .logo {
-    margin: 0 2rem 0 0;
-  }
+/* 自定义滚动条样式 */
+#custom-scrollbar {
+  position: fixed;
+  top: 0;
+  right: 4px;
+  width: 8px;
+  height: 100px;
+  /* 初始高度，将被JS动态调整 */
+  border-radius: 4px;
+  background-color: rgba(0, 0, 0, 0.3);
+  opacity: 0;
+  transition: opacity 0.3s ease;
+  z-index: 10000;
+  pointer-events: none;
+  /* 不拦截鼠标事件 */
+}
 
-  header .wrapper {
-    display: flex;
-    place-items: flex-start;
-    flex-wrap: wrap;
-  }
-
-  nav {
-    text-align: left;
-    margin-left: -1rem;
-    font-size: 1rem;
-
-    padding: 1rem 0;
-    margin-top: 1rem;
-  }
+/* 悬停效果 - 虽然不能直接点击，但当鼠标移到右侧时可以稍微加深颜色 */
+#custom-scrollbar:hover {
+  background-color: rgba(0, 0, 0, 0.5);
 }
 </style>
