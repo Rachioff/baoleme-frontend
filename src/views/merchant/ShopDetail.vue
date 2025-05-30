@@ -2,7 +2,7 @@
     <div class="shop-detail-page">
     <n-page-header :title="shop?.name || '店铺详情'" @back="goBack">
         <template #avatar>
-        <n-avatar v-if="shop?.avatar" :src="shop.avatar" round :size="40" />
+        <n-avatar v-if="shop?.avatarUrl" :src="shop.avatarUrl" round :size="40" object-fit="cover" />
         <n-icon v-else :component="StorefrontOutline" :size="32" />
         </template>
         <template #extra>
@@ -11,7 +11,7 @@
             <template #icon><n-icon :component="CreateOutline" /></template>
             编辑店铺信息
             </n-button>
-            </n-space>
+        </n-space>
         </template>
         <template #footer v-if="shop">
         <n-tabs v-model:value="currentTab" type="line" animated>
@@ -23,10 +23,7 @@
             <n-tab-pane name="orders" tab="订单处理">
             <n-text>订单处理功能开发中...</n-text>
             </n-tab-pane>
-            <n-tab-pane name="settings" tab="店铺设置">
-            <n-text>店铺设置功能开发中...</n-text>
-            </n-tab-pane>
-        </n-tabs>
+            </n-tabs>
         </template>
     </n-page-header>
 
@@ -41,50 +38,75 @@
 
     <div v-else class="shop-content-container">
         <div v-if="currentTab === 'overview'">
-        <n-grid :x-gap="20" :y-gap="20" cols="1 s:1 m:2" responsive="screen">
+        <n-grid :x-gap="20" :y-gap="24" cols="1 s:1 m:2" responsive="screen">
             <n-gi>
-            <n-card title="基本信息" class="detail-card">
-                <template #header-extra>
-                <n-tag :type="getShopStatusType(shop.status)">{{ formatShopStatus(shop.status) }}</n-tag>
-                </template>
-                <n-descriptions label-placement="top" bordered :column="1">
-                <n-descriptions-item label="店铺名称">
-                    {{ shop.name }}
+            <n-card title="基本信息与状态" class="detail-card" :segmented="{ content: true }">
+                <n-descriptions label-placement="left" bordered :column="1" size="small">
+                <n-descriptions-item label="店铺ID">{{ shop.id }}</n-descriptions-item>
+                <n-descriptions-item label="店铺名称">{{ shop.name }}</n-descriptions-item>
+                <n-descriptions-item label="开业状态">
+                    <n-tag :type="shop.opened ? 'success' : 'error'" round>
+                    {{ shop.opened ? '营业中' : '休息中' }}
+                    </n-tag>
                 </n-descriptions-item>
-                <n-descriptions-item label="店铺ID">
-                    {{ shop.id }}
+                <n-descriptions-item label="认证状态">
+                    <n-tag :type="shop.verified ? 'success' : 'warning'" round>
+                    {{ shop.verified ? '已认证' : '未认证' }}
+                    </n-tag>
                 </n-descriptions-item>
-                <n-descriptions-item label="店铺地址">
-                    <n-icon :component="LocationOutline" /> {{ shop.address }}
+                <n-descriptions-item label="营业时间 (每日)">
+                    <span v-if="shop.openTimeStart !== null && shop.openTimeEnd !== null">
+                    {{ minutesToHHMM(shop.openTimeStart) }} - {{ minutesToHHMM(shop.openTimeEnd) }}
+                    </span>
+                    <span v-else>未设置</span>
                 </n-descriptions-item>
-                <n-descriptions-item label="联系电话">
-                    <n-icon :component="CallOutline" /> {{ shop.phone || '暂未提供' }}
-                </n-descriptions-item>
-                <n-descriptions-item label="平均评分">
-                    <n-rate readonly :default-value="shop.rating" size="small" /> ({{ shop.rating }})
-                </n-descriptions-item>
-                <n-descriptions-item label="创建日期">
-                    {{ formatDate(shop.createdAt) }}
+                <n-descriptions-item label="店铺简介">
+                    <n-ellipsis expand-trigger="click" line-clamp="3" :tooltip="{ width: 300 }">
+                    {{ shop.description || '店主很懒，什么都没留下...' }}
+                    </n-ellipsis>
                 </n-descriptions-item>
                 </n-descriptions>
             </n-card>
             </n-gi>
 
             <n-gi>
-            <n-card title="营业信息" class="detail-card">
-                <n-descriptions label-placement="top" bordered :column="1">
-                <n-descriptions-item label="店铺简介">
-                    <n-ellipsis expand-trigger="click" line-clamp="3" :tooltip="{ width: 300 }">
-                    {{ shop.description || '店主很懒，什么都没留下...' }}
-                    </n-ellipsis>
+            <n-card title="配送与费用" class="detail-card" :segmented="{ content: true }">
+                <n-descriptions label-placement="left" bordered :column="1" size="small">
+                <n-descriptions-item label="配送费用">
+                    {{ formatPrice(shop.deliveryPrice) }}
                 </n-descriptions-item>
-                <n-descriptions-item label="营业时间">
-                    <div v-if="shop.businessHours && Object.keys(shop.businessHours).length > 0">
-                    <n-tag v-for="(time, day) in shop.businessHours" :key="day" type="info" style="margin-right: 5px; margin-bottom: 5px;">
-                        {{ formatDay(day) }}: {{ time }}
-                    </n-tag>
-                    </div>
-                    <span v-else>暂未设置</span>
+                <n-descriptions-item label="起送价格">
+                    {{ formatPrice(shop.deliveryThreshold) }}
+                </n-descriptions-item>
+                <n-descriptions-item label="最远配送距离">
+                    {{ shop.maximumDistance !== null ? `${shop.maximumDistance} 公里` : '未设置' }}
+                </n-descriptions-item>
+                <n-descriptions-item label="店铺类型">
+                    <n-space v-if="shop.categories && shop.categories.length > 0">
+                        <n-tag v-for="cat in shop.categories" :key="cat" type="info" round>
+                        {{ formatCategory(cat) }}
+                        </n-tag>
+                    </n-space>
+                    <span v-else>未设置</span>
+                </n-descriptions-item>
+                </n-descriptions>
+            </n-card>
+            </n-gi>
+
+            <n-gi :span="2">
+            <n-card title="地址与联系方式" class="detail-card" :segmented="{ content: true }">
+                <n-descriptions label-placement="left" bordered :column="1" size="small">
+                <n-descriptions-item label="联系人">{{ shop.address.name }}</n-descriptions-item>
+                <n-descriptions-item label="联系电话">{{ shop.address.tel }}</n-descriptions-item>
+                <n-descriptions-item label="省份">{{ shop.address.province }}</n-descriptions-item>
+                <n-descriptions-item label="城市">{{ shop.address.city }}</n-descriptions-item>
+                <n-descriptions-item label="区/县">{{ shop.address.district }}</n-descriptions-item>
+                <n-descriptions-item v-if="shop.address.town" label="街道/乡镇">
+                    {{ shop.address.town }}
+                </n-descriptions-item>
+                <n-descriptions-item label="详细地址">{{ shop.address.address }}</n-descriptions-item>
+                <n-descriptions-item label="坐标 (经度, 纬度)">
+                    {{ shop.address.coordinate[0] }}, {{ shop.address.coordinate[1] }}
                 </n-descriptions-item>
                 </n-descriptions>
             </n-card>
@@ -96,146 +118,166 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, computed } from 'vue'
+import { ref, onMounted, computed, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import {
     NPageHeader, NSpace, NButton, NIcon, NAvatar, NCard, NDescriptions,
-    NDescriptionsItem, NSpin, NEmpty, NTag, NRate, NGrid, NGi, NEllipsis,
+    NDescriptionsItem, NSpin, NEmpty, NTag, NGrid, NGi, NEllipsis,
     NTabs, NTabPane, NText, useMessage
 } from 'naive-ui'
 import {
-    CreateOutline, StorefrontOutline, LocationOutline, CallOutline, StarOutline,
-    ArrowBackOutline // for goBack if not using n-page-header's default
+    CreateOutline, StorefrontOutline, LocationOutline, CallOutline, StarOutline, // StarOutline 可以替换为其他相关图标
+    // ArrowBackOutline // n-page-header自带返回
 } from '@vicons/ionicons5'
-import { format } from 'date-fns' // 用于日期格式化
+// import { format } from 'date-fns' // 如果需要更复杂的日期格式化
 
-// 店铺数据接口定义
-interface Shop {
-    id: string
-    name: string
-    address: string
-    rating: number
-    description?: string
-    avatar?: string
-    phone?: string
-    businessHours?: Record<string, string> // 例如: { "monday": "09:00-21:00", "tuesday": "09:00-21:00" }
-    status?: string // 例如: 'active', 'pending_review', 'closed_temporarily', 'closed_permanently'
-    createdAt?: string
+// --- 复用 ShopEditForm.vue 中的数据模型定义 ---
+interface 地址 {
+    address: string;
+    city: string;
+    coordinate: [number | null, number | null];
+    district: string;
+    name: string;
+    province: string;
+    tel: string;
+    town?: string;
 }
+
+// 店铺资料接口 (与 ShopEditForm.vue 中的 店铺资料Editable 类似，但这里是展示用)
+interface 店铺资料 {
+    id: string;
+    name: string;
+    description: string;
+    avatarUrl?: string; // 注意：这里是 avatarUrl，对应编辑表单的字段
+    opened: boolean;
+    openTimeStart: number | null;
+    openTimeEnd: number | null;
+    deliveryPrice: number | null;
+    deliveryThreshold: number | null;
+    maximumDistance: number | null;
+    categories: string[];
+    address: 地址;
+    verified: boolean;
+    // 如果还有其他只读字段，如评分、创建时间等，可以加回来
+    rating?: number; // 假设有评分
+    createdAt?: string; // 假设有创建时间
+}
+
 
 const route = useRoute()
 const router = useRouter()
 const message = useMessage()
 
 const shopId = computed(() => route.params.shopId as string)
-const shop = ref<Shop | null>(null)
+const shop = ref<店铺资料 | null>(null) // 使用更新后的接口
 const isLoading = ref(true)
-const currentTab = ref('overview') // 默认选中的 Tab
+const currentTab = ref('overview')
 
-// 模拟的店铺数据，实际应从API获取
-const mockShopDatabase: Record<string, Shop> = {
+// --- 复用 ShopEditForm.vue 中的模拟数据库和类型选项 ---
+const mockShopDatabaseFromEdit: Record<string, 店铺资料> = { // 类型改为 店铺资料
     'shop-1': {
-    id: 'shop-1',
-    name: '我的美味店铺 1',
-    address: '创意路 1 号',
-    rating: 4.5,
-    description: '这是一家充满特色和美味的店铺，提供各种令人垂涎的佳肴。店铺 1 的目标是为每一位顾客带来难忘的用餐体验。我们注重食材的新鲜和菜品的创新，希望您能在这里找到心仪的美食。',
-    avatar: 'https://picsum.photos/seed/shop-1/200/200',
-    phone: '13800138001',
-    businessHours: { monday: '09:00 - 21:00', tuesday: '09:00 - 21:00', wednesday: '09:00 - 21:00', thursday: '09:00 - 21:00', friday: '09:00 - 23:00', saturday: '10:00 - 23:00', sunday: '10:00 - 20:00' },
-    status: 'active',
-    createdAt: new Date(Date.now() - 1000 * 60 * 60 * 24 * 30).toISOString(), // 30天前
+    id: 'shop-1', name: '创意轻食坊', description: '健康美味，沙拉与三明治首选。',
+    avatarUrl: 'https://picsum.photos/seed/shop-1/200/200',
+    opened: true, openTimeStart: 540, openTimeEnd: 1200,
+    deliveryPrice: 500, deliveryThreshold: 2000, maximumDistance: 3.0,
+    categories: ['fast_food', 'local_snacks'],
+    address: {
+        name: '李经理', tel: '13800001111', province: '北京市', city: '北京市', district: '海淀区', town: '中关村街道',
+        address: '宇宙中心五道口大厦101室', coordinate: [116.334935, 39.996249]
+    },
+    verified: true, rating: 4.8, createdAt: new Date(Date.now() - 20 * 24 * 60 * 60 * 1000).toISOString()
     },
     'shop-2': {
-    id: 'shop-2',
-    name: '我的美味店铺 2',
-    address: '创意路 2 号',
-    rating: 4.2,
-    description: '店铺 2 以其独特的家常菜闻名，每一道菜都充满了温馨的味道。',
-    avatar: 'https://picsum.photos/seed/shop-2/200/200',
-    phone: '13900139002',
-    businessHours: { monday: '10:00 - 20:00', tuesday: '10:00 - 20:00', wednesday: '10:00 - 20:00', thursday: '10:00 - 20:00', friday: '10:00 - 22:00' },
-    status: 'pending_review',
-    createdAt: new Date(Date.now() - 1000 * 60 * 60 * 24 * 5).toISOString(), // 5天前
+    id: 'shop-2', name: '甜蜜角落咖啡馆', description: '手冲咖啡与精致甜点。',
+    avatarUrl: 'https://picsum.photos/seed/shop-2/200/200',
+    opened: false, openTimeStart: 600, openTimeEnd: 1080,
+    deliveryPrice: 300, deliveryThreshold: 1500, maximumDistance: 2.0,
+    categories: ['dessert_drink'],
+    address: {
+        name: '王老板', tel: '13911112222', province: '上海市', city: '上海市', district: '徐汇区',
+        address: '衡山路123号', coordinate: [121.452323, 31.209175]
     },
-    // 可以按需添加更多模拟数据，确保 ShopList.vue 中生成的 ID 能对应上
-}
+    verified: false, rating: 4.2, createdAt: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000).toISOString()
+    },
+};
+
+// 模拟店铺类型选项 (与 ShopEditForm.vue 中保持一致，用于显示)
+const categoryDisplayMap: Record<string, string> = {
+    'fast_food': '快餐便当',
+    'dessert_drink': '甜品饮品',
+    'sichuan_hunan': '川湘菜',
+    'local_snacks': '地方小吃',
+    'japanese_korean': '日韩料理',
+    'supermarket': '超市便利',
+};
+
 
 const fetchShopDetails = async (id: string) => {
-    isLoading.value = true
-    console.log(`模拟获取店铺 ${id} 的详细信息...`)
-    await new Promise(resolve => setTimeout(resolve, 700)) // 模拟网络延迟
+    isLoading.value = true;
+    console.log(`详情页: 模拟获取店铺 ${id} 的详细信息...`);
+    await new Promise(resolve => setTimeout(resolve, 300)); // 模拟延迟
 
-    const foundShop = mockShopDatabase[id] || Object.values(mockShopDatabase).find(s => s.id.startsWith(id))
+    // 尝试从编辑表单的模拟数据库获取最新数据（如果它被更新了）
+    // 注意：这仅用于演示目的，实际项目中应有统一数据源或状态管理
+    const potentiallyUpdatedShop = (window as any).mockShopDatabaseForEdit?.[id]; // 假设编辑表单的mockDB暴露到window
+    const data = potentiallyUpdatedShop || mockShopDatabaseFromEdit[id];
 
-    if (foundShop) {
-    shop.value = foundShop
+
+    if (data) {
+    shop.value = JSON.parse(JSON.stringify(data)); // 深拷贝
     } else {
-    shop.value = null
-    message.error('店铺信息加载失败或店铺不存在')
+    shop.value = null;
+    message.error('店铺信息加载失败或店铺不存在');
     }
-    isLoading.value = false
+    isLoading.value = false;
+};
+
+// --- 复用时间转换函数 ---
+const minutesToHHMM = (minutes: number | null): string => {
+    if (minutes === null || minutes < 0 || minutes > 1439) return '未设置';
+    const h = Math.floor(minutes / 60);
+    const m = minutes % 60;
+    return `${h < 10 ? '0' + h : h}:${m < 10 ? '0' + m : m}`;
+};
+
+// 价格格式化 (分 -> 元)
+const formatPrice = (priceInCents: number | null): string => {
+    if (priceInCents === null || typeof priceInCents !== 'number') return '未设置';
+    return `¥${(priceInCents / 100).toFixed(2)}`;
+};
+
+// 格式化分类显示
+const formatCategory = (categoryKey: string): string => {
+    return categoryDisplayMap[categoryKey] || categoryKey;
 }
+
 
 onMounted(() => {
     if (shopId.value) {
-    fetchShopDetails(shopId.value)
+    fetchShopDetails(shopId.value);
     } else {
-    message.error('无效的店铺ID')
-    isLoading.value = false
-    // router.push('/merchant/shops'); // 或者跳转回列表页
+    message.error('无效的店铺ID');
+    isLoading.value = false;
     }
-})
+});
+
+// 监听路由参数变化，如果 shopId 变了，重新加载数据
+watch(() => route.params.shopId, (newId) => {
+    if (newId && typeof newId === 'string') {
+        fetchShopDetails(newId);
+        currentTab.value = 'overview'; // 重置 Tab
+    }
+});
+
 
 const goBack = () => {
-    router.back() // 或 router.push('/merchant/shops')
-}
+    router.back();
+};
 
 const handleEditShop = () => {
-    if (!shop.value) return
-    message.info(`功能开发中：编辑店铺 - ${shop.value.name}`)
-    // router.push(`/merchant/shops/edit/${shop.value.id}`)
-}
-
-// 工具函数 - 格式化日期
-const formatDate = (dateString?: string) => {
-    if (!dateString) return '未知'
-    try {
-    return format(new Date(dateString), 'yyyy-MM-dd HH:mm')
-    } catch (e) {
-    return dateString // 解析失败则返回原始字符串
-    }
-}
-
-// 工具函数 - 格式化星期
-const formatDay = (dayKey: string) => {
-    const dayMap: Record<string, string> = {
-    monday: '周一', tuesday: '周二', wednesday: '周三', thursday: '周四',
-    friday: '周五', saturday: '周六', sunday: '周日',
-    }
-    return dayMap[dayKey.toLowerCase()] || dayKey
-}
-
-// 工具函数 - 获取店铺状态对应的标签类型
-const getShopStatusType = (status?: string): ('success' | 'warning' | 'error' | 'info' | 'default') => {
-    switch (status) {
-    case 'active': return 'success'
-    case 'pending_review': return 'warning'
-    case 'closed_temporarily': return 'info'
-    case 'closed_permanently': return 'error'
-    default: return 'default'
-    }
-}
-// 工具函数 - 格式化店铺状态显示文本
-const formatShopStatus = (status?: string): string => {
-    switch (status) {
-    case 'active': return '营业中'
-    case 'pending_review': return '审核中'
-    case 'closed_temporarily': return '暂停营业'
-    case 'closed_permanently': return '已关闭'
-    default: return status || '未知状态'
-    }
-}
+    if (!shop.value) return;
+    router.push(`/merchant/shops/edit/${shop.value.id}`);
+};
 
 </script>
 
@@ -249,7 +291,6 @@ const formatShopStatus = (status?: string): string => {
     background-color: #fff;
     padding: 16px 24px;
     border-radius: 8px;
-    /* margin-bottom: 20px; */ /* Tabs 作为 footer 时，这个 mb 可以去掉或调整 */
     box-shadow: 0 1px 4px rgba(0, 21, 41, 0.08);
 }
 
@@ -267,13 +308,15 @@ const formatShopStatus = (status?: string): string => {
 }
 
 .shop-content-container {
-    margin-top: 20px; /* 与 PageHeader 的 Tabs 分隔开 */
+    margin-top: 20px;
 }
 
 .detail-card {
-    margin-bottom: 20px; /* 如果有多个卡片纵向排列 */
+    margin-bottom: 20px; /* 在Grid布局中，y-gap会处理垂直间距，这里可以移除或保留作为独立卡片的间距 */
 }
-.n-descriptions-item-label {
-    font-weight: bold;
+
+.n-descriptions .n-descriptions-item-label {
+    font-weight: 500; /* 标签加粗一点点 */
+    color: var(--n-text-color-secondary);
 }
 </style>

@@ -209,10 +209,9 @@
   }
   
   const handleEditShop = (shop: Shop) => {
-    message.info(`功能开发中：编辑店铺 - ${shop.name}`)
     console.log('触发编辑商铺操作:', shop)
     // 后续可以跳转到编辑商铺的路由，并带上店铺ID:
-    // router.push(`/merchant/shops/edit/${shop.id}`);
+    router.push(`/merchant/shops/edit/${shop.id}`);
   }
   
   const handleDeleteShop = (shop: Shop) => {
@@ -235,9 +234,7 @@
   }
   
   const viewShopDetails = (shopId: string) => {
-    message.info(`功能开发中：查看店铺详情 - ${shopId}`)
-    console.log('查看店铺详情:', shopId)
-    // router.push(`/merchant/shops/${shopId}/dashboard`) // 例如跳转到店铺的管理仪表盘
+    router.push(`/merchant/shops/${shopId}/detail`)
   }
   </script>
   

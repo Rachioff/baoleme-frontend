@@ -54,6 +54,18 @@ const routes: Array<RouteRecordRaw> = [
     name: 'MerchantShopList',
     component: () => import('@/views/merchant/ShopList.vue'),
   },
+  {
+    path: '/merchant/shops/:shopId/detail', // 商户的店铺详情页
+    name: 'MerchantShopDetail',
+    component: () => import('@/views/merchant/ShopDetail.vue'),
+    props: true, // 将路由参数 shopId 作为 props 传递给组件
+  },
+  {
+    path: '/merchant/shops/edit/:shopId', // 编辑店铺信息的路由
+    name: 'MerchantShopEdit',
+    component: () => import('@/views/merchant/ShopEditForm.vue'),
+    props: true,
+  },
 ]
 
 const router = createRouter({
