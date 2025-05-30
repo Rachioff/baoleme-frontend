@@ -50,6 +50,11 @@ const routes: Array<RouteRecordRaw> = [
     name: 'OrderDetail',
     component: () => import('@/views/customer/order/OrderInfo.vue')
   },
+  {
+    path: '/shop-statistics',
+    name: 'ShopStatistics',
+    component: () => import('@/views/merchant/shop/ShopStatistics.vue')
+  },
 ]
 
 const router = createRouter({
