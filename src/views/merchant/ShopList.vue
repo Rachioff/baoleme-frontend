@@ -204,13 +204,11 @@
   const handleAddShop = () => {
     message.info('功能开发中：增加商铺')
     console.log('触发增加商铺操作')
-    // 后续可以跳转到增加商铺的路由:
-    // router.push('/merchant/shops/create');
+    router.push('/merchant/shops/create');
   }
   
   const handleEditShop = (shop: Shop) => {
     console.log('触发编辑商铺操作:', shop)
-    // 后续可以跳转到编辑商铺的路由，并带上店铺ID:
     router.push(`/merchant/shops/edit/${shop.id}`);
   }
   

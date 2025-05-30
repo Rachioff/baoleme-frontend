@@ -55,6 +55,11 @@ const routes: Array<RouteRecordRaw> = [
     component: () => import('@/views/merchant/ShopList.vue'),
   },
   {
+    path: '/merchant/shops/create', // 新增：创建店铺的路由
+    name: 'MerchantShopCreate',
+    component: () => import('@/views/merchant/ShopCreateForm.vue'),
+  },
+  {
     path: '/merchant/shops/:shopId/detail', // 商户的店铺详情页
     name: 'MerchantShopDetail',
     component: () => import('@/views/merchant/ShopDetail.vue'),
