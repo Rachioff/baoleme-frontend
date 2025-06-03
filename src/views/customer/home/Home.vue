@@ -68,12 +68,6 @@
     <!-- 热门商家 -->
     <div class="section-title">
       <span>热门商家</span>
-      <n-button text size="small" @click="router.push('/stores')">
-        查看全部
-        <template #icon>
-          <n-icon><right-outlined /></n-icon>
-        </template>
-      </n-button>
     </div>
 
     <div class="store-list">

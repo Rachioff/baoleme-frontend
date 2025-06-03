@@ -54,13 +54,13 @@ const routes: Array<RouteRecordRaw> = [
   {
     path: '/search',
     name: 'Search',
-    component: () => import('@/views/customer/search/Search.vue'),
+    component: () => import('@/views/customer/home/Search.vue'),
   },
   // 搜索结果页面
   {
     path: '/search/result',
     name: 'SearchResult',
-    component: () => import('@/views/customer/search/SearchResult.vue'),
+    component: () => import('@/views/customer/home/SearchResult.vue'),
   }
 ]
 
