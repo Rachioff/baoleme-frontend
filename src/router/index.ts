@@ -60,10 +60,18 @@ const routes: Array<RouteRecordRaw> = [
     component: () => import('@/views/merchant/ShopCreateForm.vue'),
   },
   {
-    path: '/merchant/shops/:shopId/detail', // 商户的店铺详情页
+    path: '/merchant/shops/:shopId/detail',
     name: 'MerchantShopDetail',
     component: () => import('@/views/merchant/ShopDetail.vue'),
-    props: true, // 将路由参数 shopId 作为 props 传递给组件
+    props: true,
+    children: [
+      {
+        path: 'products',
+        name: 'MerchantShopProductList',
+        component: () => import('@/views/merchant/product/ProductList.vue'), // 商品列表组件
+        props: true
+      }
+    ]
   },
   {
     path: '/merchant/shops/edit/:shopId', // 编辑店铺信息的路由
@@ -71,6 +79,28 @@ const routes: Array<RouteRecordRaw> = [
     component: () => import('@/views/merchant/ShopEditForm.vue'),
     props: true,
   },
+  {
+    path: '/merchant/shops/:shopId/products/create',
+    name: 'MerchantProductCreate',
+    component: () => import('@/views/merchant/product/ProductForm.vue'),
+    props: true,
+    meta: { requiresAuth: true, role: 'merchant' }
+  },
+  {
+    path: '/merchant/products/:productId/edit', 
+    name: 'MerchantProductEdit',
+    component: () => import('@/views/merchant/product/ProductForm.vue'),
+    props: true, // productId 会被传递
+    meta: { requiresAuth: true, role: 'merchant' }
+  },
+  {
+    path: '/merchant/products/:productId',
+    name: 'MerchantProductDetail',
+    component: () => import('@/views/merchant/product/ProductDetail.vue'),
+    props: true, // productId 会被传递
+    meta: { requiresAuth: true, role: 'merchant' }
+  },
+  
 ]
 
 const router = createRouter({
