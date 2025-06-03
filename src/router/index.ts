@@ -100,7 +100,11 @@ const routes: Array<RouteRecordRaw> = [
     props: true, // productId 会被传递
     meta: { requiresAuth: true, role: 'merchant' }
   },
-  
+  }
+    path: '/shop-statistics',
+    name: 'ShopStatistics',
+    component: () => import('@/views/merchant/shop/ShopStatistics.vue')
+  },
 ]
 
 const router = createRouter({
