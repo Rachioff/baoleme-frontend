@@ -14,7 +14,7 @@ const routes: Array<RouteRecordRaw> = [
   {
     path: '/login',
     name: 'Login',
-    component: Login
+    component: () => import('@/views/customer/auth/Login.vue')
   },
 
   // 忘记密码
@@ -31,7 +31,6 @@ const routes: Array<RouteRecordRaw> = [
     // 使用懒加载
     component: () => import('@/views/customer/home/Home.vue')
   },
-  // 其他路由将在后续添加
   {
     path: '/user/:userId',
     name: 'UserProfile',
