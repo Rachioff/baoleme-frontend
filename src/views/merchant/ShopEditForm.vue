@@ -143,11 +143,36 @@
                 <n-input v-model:value="formData.address.address" placeholder="请输入街道、楼牌号等" />
             </n-form-item-gi>
 
-            <n-form-item-gi label="经度" path="address.coordinate.0">
-                <n-input-number v-model:value="formData.address.coordinate[0]" :precision="6" placeholder="例如: 116.397128" style="width: 100%;" />
+            <n-form-item-gi label="经度 (通过定位获取)" path="address.coordinate.0">
+                <n-input-number 
+                  v-model:value="formData.address.coordinate[0]" 
+                  :precision="6" 
+                  placeholder="请点击下方按钮获取" 
+                  style="width: 100%;" 
+                  disabled />
             </n-form-item-gi>
-            <n-form-item-gi label="纬度" path="address.coordinate.1">
-                <n-input-number v-model:value="formData.address.coordinate[1]" :precision="6" placeholder="例如: 39.916527" style="width: 100%;" />
+            <n-form-item-gi label="纬度 (通过定位获取)" path="address.coordinate.1">
+                <n-input-number 
+                  v-model:value="formData.address.coordinate[1]" 
+                  :precision="6" 
+                  placeholder="请点击下方按钮获取" 
+                  style="width: 100%;" 
+                  disabled />
+            </n-form-item-gi>
+            <n-form-item-gi :span="3" style="display: flex; flex-direction: column; align-items: flex-start;">
+                 <n-button @click="fetchCurrentLocation" :loading="isLocating" type="default" :block="false" style="margin-bottom: 5px;">
+                    <template #icon><n-icon :component="LocateOutline" /></template>
+                    获取店铺当前经纬度
+                </n-button>
+                <n-text v-if="geolocationError" type="error" style="font-size: 12px;">
+                    定位失败: {{ geolocationError.message }}
+                </n-text>
+                <n-text v-else-if="formData.address.coordinate[0] !== null && formData.address.coordinate[1] !== null" :depth="3" style="font-size: 12px;">
+                    已获取坐标。如需更改，请重新定位。
+                </n-text>
+                 <n-text v-else :depth="3" style="font-size: 12px;">
+                    点击按钮获取店铺的精确地理位置。
+                </n-text>
             </n-form-item-gi>
         </n-grid>
 
@@ -166,7 +191,8 @@ import {
     NUpload, NUploadDragger, NIcon, NP, useMessage,
     type FormInst, type FormRules, type FormItemRule, type UploadFileInfo, type UploadCustomRequestOptions, type SelectOption
 } from 'naive-ui'
-import { CloudUploadOutline } from '@vicons/ionicons5'
+import { CloudUploadOutline, LocateOutline } from '@vicons/ionicons5'
+import { useGeolocation, type GeolocationError } from '@/composables/useGeolocation';
 
 // --- 数据模型定义 ---
 interface 地址 {
@@ -284,6 +310,37 @@ const fetchShopData = async (id: string) => {
     formData.value = null;
     }
     isLoading.value = false;
+};
+
+const {
+  coordinates: currentLocation,
+  error: geolocationError,
+  isLocating,
+  getCurrentLocation
+} = useGeolocation();
+
+const fetchCurrentLocation = async () => {
+  try {
+    // 请求高精度定位，超时时间10秒
+    const coords = await getCurrentLocation({ enableHighAccuracy: true, timeout: 10000 });
+    if (formData.value && formData.value.address) {
+      // Geolocation API 返回的是 coords.longitude 和 coords.latitude
+      console.log(coords.latitude)
+      console.log(coords.longitude)
+      console.log(coords)
+      formData.value.address.coordinate = [
+        parseFloat(coords.longitude.toFixed(6)), // 保留6位小数
+        parseFloat(coords.latitude.toFixed(6))
+      ];
+      message.success(`定位成功：经度 ${coords.longitude.toFixed(6)}, 纬度 ${coords.latitude.toFixed(6)}`);
+      geolocationError.value = null; // 清除旧的错误信息
+    }
+  } catch (err) {
+    // geolocationError ref 已经在 composable 内部被设置了
+    // message.error(`定位失败: ${(err as GeolocationError).message}`); // composable 会设置 error.value
+    console.error("Geolocation error from component:", err);
+    // 可以在此处理特定于组件的错误反馈，如果 composable 中的错误处理不够的话
+  }
 };
 
 onMounted(() => {
