@@ -14,7 +14,7 @@ const routes: Array<RouteRecordRaw> = [
   {
     path: '/login',
     name: 'Login',
-    component: Login
+    component: () => import('@/views/customer/auth/Login.vue')
   },
 
   // 忘记密码
@@ -31,7 +31,6 @@ const routes: Array<RouteRecordRaw> = [
     // 使用懒加载
     component: () => import('@/views/customer/home/Home.vue')
   },
-  // 其他路由将在后续添加
   {
     path: '/user/:userId',
     name: 'UserProfile',
@@ -49,6 +48,57 @@ const routes: Array<RouteRecordRaw> = [
     path: '/customer/order/:id',
     name: 'OrderDetail',
     component: () => import('@/views/customer/order/OrderInfo.vue')
+  },
+  {
+    path: '/merchant/shops', // 商户的店铺列表
+    name: 'MerchantShopList',
+    component: () => import('@/views/merchant/ShopList.vue'),
+  },
+  {
+    path: '/merchant/shops/create', // 新增：创建店铺的路由
+    name: 'MerchantShopCreate',
+    component: () => import('@/views/merchant/ShopCreateForm.vue'),
+  },
+  {
+    path: '/merchant/shops/:shopId/detail',
+    name: 'MerchantShopDetail',
+    component: () => import('@/views/merchant/ShopDetail.vue'),
+    props: true,
+    children: [
+      {
+        path: 'products',
+        name: 'MerchantShopProductList',
+        component: () => import('@/views/merchant/product/ProductList.vue'), // 商品列表组件
+        props: true
+      }
+    ]
+  },
+  {
+    path: '/merchant/shops/edit/:shopId', // 编辑店铺信息的路由
+    name: 'MerchantShopEdit',
+    component: () => import('@/views/merchant/ShopEditForm.vue'),
+    props: true,
+  },
+  {
+    path: '/merchant/shops/:shopId/products/create',
+    name: 'MerchantProductCreate',
+    component: () => import('@/views/merchant/product/ProductForm.vue'),
+    props: true,
+    meta: { requiresAuth: true, role: 'merchant' }
+  },
+  {
+    path: '/merchant/products/:productId/edit', 
+    name: 'MerchantProductEdit',
+    component: () => import('@/views/merchant/product/ProductForm.vue'),
+    props: true, // productId 会被传递
+    meta: { requiresAuth: true, role: 'merchant' }
+  },
+  {
+    path: '/merchant/products/:productId',
+    name: 'MerchantProductDetail',
+    component: () => import('@/views/merchant/product/ProductDetail.vue'),
+    props: true, // productId 会被传递
+    meta: { requiresAuth: true, role: 'merchant' }
   },
   {
     path: '/shop-statistics',
