@@ -70,6 +70,10 @@ const routes: Array<RouteRecordRaw> = [
     path: '/order/getsubmit',
     name: 'GetOrderSubmit',
     component: () => import('@/views/customer/order/GetOrder.vue')
+  }, {
+    path: '/rider/order/:id',
+    name: 'OrderForRider',
+    component: () => import('@/views/customer/order/OrderInfoForRider.vue')
   }
 ]
 
