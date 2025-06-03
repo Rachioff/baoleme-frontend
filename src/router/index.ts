@@ -31,15 +31,12 @@ const routes: Array<RouteRecordRaw> = [
     // 使用懒加载
     component: () => import('@/views/customer/home/Home.vue')
   },
-<<<<<<< HEAD
-=======
   {
     path: '/user/:userId',
     name: 'UserProfile',
     component: () => import('@/views/user/UserView.vue'),
     props: true
   },
->>>>>>> origin/dev
   // 订单
   {
     path: '/customer/order',
@@ -58,7 +55,6 @@ const routes: Array<RouteRecordRaw> = [
     component: () => import('@/views/merchant/ShopList.vue'),
   },
   {
-<<<<<<< HEAD
     path: '/:catchAll(.*)*',
     name: 'NotFound',
     component: () => import('@/views/result/404.vue')
@@ -82,8 +78,7 @@ const routes: Array<RouteRecordRaw> = [
     path: '/rider/order/:id',
     name: 'OrderForRider',
     component: () => import('@/views/customer/order/OrderInfoForRider.vue')
-  }
-=======
+  }, {
     path: '/merchant/shops/create', // 新增：创建店铺的路由
     name: 'MerchantShopCreate',
     component: () => import('@/views/merchant/ShopCreateForm.vue'),
@@ -134,7 +129,6 @@ const routes: Array<RouteRecordRaw> = [
     name: 'ShopStatistics',
     component: () => import('@/views/merchant/shop/ShopStatistics.vue')
   },
->>>>>>> origin/dev
 ]
 
 const router = createRouter({
