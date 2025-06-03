@@ -295,7 +295,7 @@ import {
   AlipayCircleFilled,
   MailFilled
 } from '@vicons/antd'
-import { FormInst, FormRules } from 'naive-ui'
+import { type FormInst, type FormRules } from 'naive-ui'
 
 const router = useRouter()
 const loading = ref(false)
