@@ -41,7 +41,6 @@ onMounted(() => {
 
   // 隐藏原生滚动条但保留滚动功能
   document.documentElement.style.scrollbarWidth = 'none'; // Firefox
-  document.documentElement.style.msOverflowStyle = 'none'; // IE
 
   // 添加滚动事件监听
   let scrollTimer: number | null = null;
