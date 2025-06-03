@@ -8,7 +8,7 @@
                 <n-space align="start" :wrap="false" size="large">
                     <!-- 左侧：头像与店铺信息 -->
                     <div class="order-left">
-                        <n-avatar round :size="80" :src="order.storeAvatar" />
+                        <n-avatar :size="80" :src="order.storeAvatar" />
                     </div>
 
                     <!-- 右侧：订单详情 -->
@@ -158,7 +158,7 @@ const buyAgain = (order: OrderItem) => {
     box-shadow: 0 6px 16px rgba(0, 0, 0, 0.1);
 }
 
-.order-card-info {
+/* .order-card-info {
     padding: 16px;
     border: 1px solid #e5e7eb;
     border-radius: 12px;
@@ -166,12 +166,12 @@ const buyAgain = (order: OrderItem) => {
     box-shadow: 0 1px 4px rgba(0, 0, 0, 0.05);
     margin: 8px 5px;
     transition: transform 0.2s ease, box-shadow 0.2s ease;
-}
+} */
 
-.order-card-info:hover {
+/* .order-card-info:hover {
     transform: translateY(-2px);
     box-shadow: 0 6px 16px rgba(0, 0, 0, 0.1);
-}
+} */
 
 .order-left {
     display: flex;

@@ -48,7 +48,7 @@
         <!-- 底部栏 -->
         <div class="order-footer">
             <div class="order-total">合计：¥{{ payable.toFixed(2) }}</div>
-            <n-button type="primary" @click="submit">提交订单</n-button>
+            <n-button type="primary" @click="submit(items)">提交订单</n-button>
             <!-- <n-modal v-model:show="showModal" preset="dialog" title="扫码付款" :closable="true" :mask-closable="false">
                 <div class="qrcode-container">
                     <n-image width="200" :src="qrCodeUrl" alt="付款码" />
@@ -64,7 +64,7 @@
 import { ref, computed } from 'vue'
 import { NAvatar, NButton, NCard, NDivider, useMessage, NInput } from 'naive-ui'
 import { type Item } from '@/types/order'
-import submitOrder from '@/api/orders'
+// import submitOrder from '@/api/orders'
 
 // TODO:这里数据只是基本展示，实际应该从前端购物车获取，然后需要加上 remark字段
 const items = ref<Item[]>([

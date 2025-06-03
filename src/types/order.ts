@@ -31,7 +31,7 @@ export interface RecommendItem {
 }
 
 // 这里是订单上的商品信息，后面还需要再
-interface Item {
+export interface Item {
     id: number
     name: string
     price: number

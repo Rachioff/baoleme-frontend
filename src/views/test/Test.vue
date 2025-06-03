@@ -1,351 +1,223 @@
 <template>
-    <n-tabs v-model:value="activeTab" default-value="signin" size="large" justify-content="space-evenly" animated>
-        <n-tab-pane name="getOrder" tab="获取新订单">
-            <n-card>
-                <div class="order-container">
+    <div class="rider-page">
+        <n-card>
+            <div id="map-container">
+                <img src="../../assets/logo.svg" alt="just for test">
+            </div>
+        </n-card>
 
-                    <div class="search-input" @click="router.push('/search')">
-                        <n-icon size="16"><search-outlined /></n-icon>
-                        <span>搜索订单</span>
-                    </div>
-
-                    <n-card v-for="item in orders" :key="item.id" class="order-card">
-                        <div class="order-header">
-                            <n-icon size="30" corlor="#00c853">
-                                <component :is="FileTextOutlined" />
-                            </n-icon>
-                            <div class="order-distance">距离 {{ item.distance }}km</div>
-                            <div class="order-number">
-                                <n-tag type="success" round>{{ item.orderNumber }}#</n-tag>
-                            </div>
-
-                        </div>
-
-                        <n-divider />
-
-                        <div class="order-info">
-                            <div class="order-address">
-                                <n-icon><location-icon /></n-icon> {{ item.address }}
-                            </div>
-                            <div class="order-time">
-                                <n-icon><clock-icon /></n-icon> 上门时间：{{ item.time }}
-                            </div>
-                            <div class="order-contact">
-                                <n-icon><phone-icon /></n-icon> {{ item.contact }}
-                            </div>
-                        </div>
-
-                        <n-divider />
-
-                        <div class="order-footer">
-                            <div class="time-left">接单剩余时间：{{ item.timeLeft }}</div>
-                            <n-button type="primary" size="large" @click="acceptOrder(item)">接单</n-button>
-                        </div>
-                    </n-card>
+        <n-card>
+            <n-card class="order-info">
+                <div class="status-bar">
+                    <span>未到达</span>
+                    <span class="order-id">12#</span>
+                </div>
+                <div class="detail">
+                    <div><n-icon>
+                            <Location />
+                        </n-icon> {{ order.address }} <span class="distance">距离{{ order.distance }}km</span></div>
+                    <div><n-icon>
+                            <ClockCircle />
+                        </n-icon> 下单时间：{{ order.orderTime }}</div>
+                    <div>联系方式：{{ order.contact }} {{ order.phone }}</div>
+                    <div>送餐内容：{{ order.content }}</div>
+                    <div>送达时间：{{ order.deliveryTime }}</div>
+                    <div>备注：{{ order.note }}</div>
+                    <div class="timeout">已超时：<span class="overtime">{{ countdown }}</span></div>
                 </div>
             </n-card>
 
-        </n-tab-pane>
-        <n-tab-pane name="deliverOrder" tab="进行中">
-            <n-card>
-                <div class="order-container">
-
-                    <div class="search-input" @click="router.push('/search')">
-                        <n-icon size="16"><search-outlined /></n-icon>
-                        <span>搜索订单</span>
-                    </div>
-
-                    <n-card v-for="item in ordersInProcess" :key="item.id" class="order-card">
-                        <div class="order-header">
-                            <n-icon size="30" corlor="#00c853">
-                                <component :is="FileTextOutlined" />
-                            </n-icon>
-                            <div class="order-distance">距离 {{ item.distance }}km</div>
-                            <div class="order-number">
-                                <n-tag type="success" round>{{ item.orderNumber }}#</n-tag>
-                            </div>
-
-                        </div>
-
-                        <n-divider />
-
-                        <div class="order-info">
-                            <div class="order-address">
-                                <n-icon><location-icon /></n-icon> {{ item.address }}
-                            </div>
-                            <div class="order-time">
-                                <n-icon><clock-icon /></n-icon> 上门时间：{{ item.time }}
-                            </div>
-                            <div class="order-contact">
-                                <n-icon><phone-icon /></n-icon> {{ item.contact }}
-                            </div>
-                        </div>
-
-                        <n-divider />
-
-                        <div class="order-footer">
-                            <div class="time-left">订单剩余时间：{{ item.timeLeft }}</div>
-                            <n-button type="warning" size="large" @click="cancelOrder(item)">取消</n-button>
-                        </div>
-                    </n-card>
+            <n-card class="bottom-bar">
+                <div class="button-group">
+                    <n-button type="primary" strong secondary round @click="callPhone">
+                        <n-icon>
+                            <ShopFilled />
+                        </n-icon>
+                    </n-button>
+                    <n-button type="primary" strong secondary round @click="sendMessage">
+                        <n-icon>
+                            <MessageFilled />
+                        </n-icon>
+                    </n-button>
+                    <n-button type="primary" round @click="confirmArrival" style="margin-right: 20px;">
+                        已到达
+                    </n-button>
                 </div>
+
             </n-card>
-        </n-tab-pane>
-        <n-tab-pane name="finishOrder" tab="已完成">
-            <n-card>
-                <div class="order-container">
-
-                    <div class="search-input" @click="router.push('/search')">
-                        <n-icon size="16"><search-outlined /></n-icon>
-                        <span>搜索订单</span>
-                    </div>
-
-                    <n-card v-for="item in ordersFinished" :key="item.id" class="order-card">
-                        <div class="order-header">
-                            <n-icon size="30" corlor="#00c853">
-                                <component :is="FileTextOutlined" />
-                            </n-icon>
-                            <div class="order-distance">距离 {{ item.distance }}km</div>
-                            <div class="order-number">
-                                <n-tag type="success" round>{{ item.orderNumber }}#</n-tag>
-                            </div>
-
-                        </div>
-
-                        <n-divider />
-
-                        <div class="order-info">
-                            <div class="order-address">
-                                <n-icon><location-icon /></n-icon> {{ item.address }}
-                            </div>
-                            <div class="order-time">
-                                <n-icon><clock-icon /></n-icon> 上门时间：{{ item.time }}
-                            </div>
-                            <div class="order-contact">
-                                <n-icon><phone-icon /></n-icon> {{ item.contact }}
-                            </div>
-                        </div>
-
-                        <n-divider />
-                        <div class="order-footer">
-                            <n-button type="warning" size="large" @click="getOrderInfo(item)">查看详情</n-button>
-                        </div>
-                    </n-card>
-                </div>
-            </n-card>
-        </n-tab-pane>
-    </n-tabs>
-
-    <n-back-top :right="20" :bottom="80" />
+        </n-card>
+    </div>
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue'
-import { NCard, NButton, NDivider } from 'naive-ui'
-import { FileTextOutlined, SearchOutlined } from '@vicons/antd'
-import { useRouter } from 'vue-router'
-import { OrderInfoForShopAndrider } from '@/types/order'
+import { ref, onMounted } from 'vue'
+import { useMessage } from 'naive-ui'
+import { ShopFilled, MessageFilled } from '@vicons/antd'
+// import { useWebSocket } from '@/utils/websocket'
 
-const router = useRouter()
+const message = useMessage()
+const order = ref({
+    id: 12,
+    address: '中国矿业大学松苑2号楼7102',
+    distance: 0.4,
+    orderTime: '2019-8-2 13:00',
+    contact: 'TC_ZY',
+    phone: '189****2342',
+    content: '鱼香肉丝、米饭',
+    remark: '需要2分餐具',
+    status: '未到达',
+    deliveryTime: '2019-8-2 13:00',
+    note: '需要2分餐具'
+})
+const countdown = ref('00:17:20')
 
-const activeTab = ref('getOrder')
-// TODO：这部分数据应该优前端购物车生成
-const orders = ref<OrderInfoForShopAndrider[]>([
-    {
-        id: 1,
-        orderNumber: '13',
-        distance: 0.4,
-        address: '中国航空航天大学松苑2号楼7102',
-        time: '2019-8-2 13:00',
-        contact: 'TC_ZY 189****7687',
-        timeLeft: '00:17:20',
-    }, {
-        id: 1,
-        orderNumber: '13',
-        distance: 0.4,
-        address: '中国航空航天大学松苑2号楼7102',
-        time: '2019-8-2 13:00',
-        contact: 'TC_ZY 189****7687',
-        timeLeft: '00:17:20',
-    },
-    {
-        id: 2,
-        orderNumber: '8',
-        distance: 0.4,
-        address: '中国航空航天大学松苑2号楼7102',
-        time: '2019-8-2 13:00',
-        contact: 'TC_ZY 189****7687',
-        timeLeft: '00:17:20',
-    },
-    {
-        id: 3,
-        orderNumber: '6',
-        distance: 0.4,
-        address: '中国航空航天大学松苑2号楼7102',
-        time: '2019-8-2 13:00',
-        contact: 'TC_ZY 189****7687',
-        timeLeft: '00:17:20',
-    },
-])
-// TODO：这两部部分数据应该由后端查询
-const ordersInProcess = ref<OrderInfoForShopAndrider[]>([
-    {
-        id: 1,
-        orderNumber: '13',
-        distance: 0.4,
-        address: '北京航空航天大学松苑2号楼7102',
-        time: '2019-8-2 13:00',
-        contact: 'TC_ZY 189****7687',
-        timeLeft: '00:17:20',
-    },
-    {
-        id: 2,
-        orderNumber: '8',
-        distance: 0.4,
-        address: '北京航空航天大学松苑2号楼7102',
-        time: '2019-8-2 13:00',
-        contact: 'TC_ZY 189****7687',
-        timeLeft: '00:17:20',
-    }
-])
+// 反馈定位
+// const { sendLocation } = useWebSocket('wss://example.com')
 
-const ordersFinished = ref<OrderInfoForShopAndrider[]>([
-    {
-        id: 1,
-        orderNumber: '13',
-        distance: 0.4,
-        address: '北京航空航天大学7号楼7102',
-        time: '2019-8-2 13:00',
-        contact: 'TC_ZY 189****7687',
-        timeLeft: '00:17:20',
-    },
-    {
-        id: 2,
-        orderNumber: '8',
-        distance: 0.4,
-        address: '北京航空航天大学7号楼7102',
-        time: '2019-8-2 13:00',
-        contact: 'TC_ZY 189****7687',
-        timeLeft: '00:17:20',
-    }
-])
-
-// 接单处理函数
-const acceptOrder = (item: any) => {
-    console.log('接受订单:', item)
-    alert("not implemented")
-    getOrder(item)
-}
-
-const cancelOrder = (item: any) => {
-    console.log('取消订单:', item)
-    alert("not implemented")
-}
-
-const getOrderInfo = (item: any) => {
-    router.push({
-        path: '/orderInfo',
-        query: { id: item.id }
+// 获取当前位置并发送
+function locateAndSend() {
+    if (!navigator.geolocation) return
+    navigator.geolocation.getCurrentPosition(pos => {
+        const { latitude, longitude } = pos.coords
+        // sendLocation({ latitude, longitude, orderId: order.value.id })
+        // drawMarker(latitude, longitude)
     })
 }
 
+// 模拟地图渲染和路径
+// function drawMarker(lat, lng) {
+//   const map = new BMapGL.Map('map')
+//   const point = new BMapGL.Point(lng, lat)
+//   map.centerAndZoom(point, 15)
+//   const marker = new BMapGL.Marker(point)
+//   map.addOverlay(marker)
+// }
+
+onMounted(() => {
+    initAMap()
+    startCountdown(1040) // 秒数
+})
+
+function initAMap() {
+    message.error('地图初始化失败')
+    //   const map = new AMap.Map('map-container', {
+    //     resizeEnable: true,
+    //     zoom: 15,
+    //   })
+    //   AMap.plugin('AMap.Geolocation', function () {
+    //     const geolocation = new AMap.Geolocation({
+    //       enableHighAccuracy: true,
+    //       timeout: 10000
+    //     })
+    //     map.addControl(geolocation)
+    //     geolocation.getCurrentPosition((status, result) => {
+    //       if (status === 'complete') {
+    //         const { position } = result
+    //         new AMap.Marker({
+    //           position,
+    //           map
+    //         })
+    //         map.setCenter(position)
+    //       } else {
+    //         message.error('定位失败')
+    //       }
+    //     })
+    //   })
+}
+
+function startCountdown(seconds: number) {
+    const timer = setInterval(() => {
+        if (seconds <= 0) {
+            clearInterval(timer)
+            countdown.value = '超时'
+        } else {
+            const h = String(Math.floor(seconds / 3600)).padStart(2, '0')
+            const m = String(Math.floor((seconds % 3600) / 60)).padStart(2, '0')
+            const s = String(seconds % 60).padStart(2, '0')
+            countdown.value = `${h}:${m}:${s}`
+            seconds--
+        }
+    }, 1000)
+}
+
+function arrive() {
+    message.success('送达确认已发送！')
+    // 发送状态更新到后端
+}
+
+function callPhone() {
+    window.open('tel:18912345678')
+}
+function sendMessage() {
+    // 可集成即时通讯
+    alert('跳转到聊天页面')
+}
+function confirmArrival() {
+    alert('订单已送达')
+}
 </script>
 
 <style scoped>
-.search-input {
-    margin-bottom: 40px;
-    flex: 1;
-    display: flex;
-    align-items: center;
-    padding: 6px 10px;
-    border-radius: 20px;
-    background-color: #f5f5f5;
-    color: #555;
-    font-size: 14px;
-    cursor: pointer;
-    transition: all 0.2s;
+.rider-page {
+    position: relative;
+    /* height: 125vh; */
+    overflow: hidden;
 }
 
-.search-input:hover {
-    background-color: #eaeaea;
-    color: #222;
+#map-container {
+    height: 50%;
 }
 
-/* 自定义主题色，后续使用 */
-:root {
-    --primary-color: #00c853;
-    /* 清新绿色 */
-    --text-color: #333;
-    --subtle-color: #888;
-    --danger-color: #e53935;
-}
-
-.order-container {
-    margin-top: 20px;
-}
-
-.order-card {
-    margin-bottom: 16px;
+.order-info {
+    margin-bottom: 125px;
     padding: 16px;
     box-shadow: 0 2px 8px rgba(100, 10, 0, 0.2);
-    /* 设置动画时长 */
     transition: transform 0.3s ease;
     border-radius: 8px;
     border-left: 6px solid var(--primary-color);
     background: #f9fefb;
 }
 
-.order-card:hover {
-    /* 设置动画方向。拟物感+卡片阴影 */
-    transform: translateY(-2px);
-}
-
-.order-header {
+.status-bar {
     display: flex;
     justify-content: space-between;
     font-weight: bold;
-    font-size: 18px;
-    font-family: 'PingFang SC', 'Microsoft YaHei', sans-serif;
 }
 
-.order-info {
-    margin-top: 12px;
-    font-size: 14px;
-    color: #666;
-}
-
-.order-info .order-address,
-.order-info .order-time,
-.order-info .order-contact {
-    display: flex;
-    align-items: center;
-    margin-bottom: 8px;
-}
-
-.order-footer {
-    display: flex;
-    justify-content: space-between;
-    margin-top: 16px;
-}
-
-.time-left {
-    color: var(--danger-color);
-    font-family: 'Courier New', monospace;
-    font-size: 16px;
-    letter-spacing: 1px;
-}
-
-.n-button {
+.detail {
     margin-top: 10px;
-    /* background-color: var(--primary-color); */
-    border: none;
+    font-size: 14px;
 }
 
-.order-number {
-    font-size: 18px;
-    background: var(--primary-color);
-    color: white;
-    padding: 4px 8px;
-    border-radius: 12px;
+.distance {
+    color: #999;
+    font-size: 12px;
+    margin-left: 5px;
+}
+
+.overtime {
+    color: red;
+    font-weight: bold;
+}
+
+.bottom-bar {
+    margin-top: 10px;
+    margin-bottom: 50px;
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    background: #fff;
+    padding: 12px;
+    display: flex;
+    justify-content: space-around;
+    box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.1);
+}
+
+.button-group {
+    display: flex;
+    justify-content: space-around;
+    align-items: center;
+    gap: 16px;
 }
 </style>

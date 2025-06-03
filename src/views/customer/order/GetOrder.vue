@@ -144,13 +144,13 @@ import { ref } from 'vue'
 import { NCard, NButton, NDivider } from 'naive-ui'
 import { FileTextOutlined, SearchOutlined } from '@vicons/antd'
 import { useRouter } from 'vue-router'
-import { OrderInfoForShopAndrider } from '@/types/order'
+// import { OrderInfoForShopAndrider } from '@/types/order'
 
 const router = useRouter()
 
 const activeTab = ref('getOrder')
 // TODO：这部分数据应该优前端购物车生成
-const orders = ref<OrderInfoForShopAndrider[]>([
+const orders = ref([
     {
         id: 1,
         orderNumber: '13',
@@ -188,7 +188,7 @@ const orders = ref<OrderInfoForShopAndrider[]>([
     },
 ])
 // TODO：这两部部分数据应该由后端查询
-const ordersInProcess = ref<OrderInfoForShopAndrider[]>([
+const ordersInProcess = ref([
     {
         id: 1,
         orderNumber: '13',
@@ -209,7 +209,7 @@ const ordersInProcess = ref<OrderInfoForShopAndrider[]>([
     }
 ])
 
-const ordersFinished = ref<OrderInfoForShopAndrider[]>([
+const ordersFinished = ref([
     {
         id: 1,
         orderNumber: '13',
@@ -234,7 +234,7 @@ const ordersFinished = ref<OrderInfoForShopAndrider[]>([
 const acceptOrder = (item: any) => {
     console.log('接受订单:', item)
     alert("not implemented")
-    getOrder(item)
+    // getOrder(item)
 }
 
 const cancelOrder = (item: any) => {
@@ -259,8 +259,8 @@ const getOrderInfo = (item: any) => {
     align-items: center;
     padding: 6px 10px;
     border-radius: 20px;
-    background-color: #f5f5f5;
-    color: #555;
+    background-color: #ebe7e7;
+    color: #575454;
     font-size: 14px;
     cursor: pointer;
     transition: all 0.2s;
