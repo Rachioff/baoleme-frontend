@@ -7,6 +7,9 @@ on:
 
 jobs:
   build:
+    env:
+      VITE_API_ROOT: ${{ vars.VITE_API_ROOT }}
+      VITE_AMAP_KEY: ${{ vars.VITE_AMAP_KEY }}
 
     runs-on: ubuntu-latest
 
