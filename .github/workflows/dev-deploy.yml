@@ -14,6 +14,7 @@ jobs:
     env:
       VITE_API_ROOT: ${{ vars.VITE_API_ROOT }}
       VITE_AMAP_KEY: ${{ vars.VITE_AMAP_KEY }}
+      VITE_AMAP_SERVICE: ${{ vars.VITE_AMAP_SERVICE }}
     runs-on: ubuntu-latest
     strategy:
       matrix:
