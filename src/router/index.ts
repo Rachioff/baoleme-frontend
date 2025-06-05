@@ -1,7 +1,7 @@
 // src/router/index.ts
 import { createRouter, createWebHistory } from 'vue-router'
 import type { RouteRecordRaw } from 'vue-router'
-import Login from '@/views/auth/Login.vue'
+import Login from '@/views/user/auth/Login.vue'
 import { defineAsyncComponent } from 'vue'
 
 const routes: Array<RouteRecordRaw> = [
@@ -14,19 +14,19 @@ const routes: Array<RouteRecordRaw> = [
   {
     path: '/login',
     name: 'Login',
-    component: () => import('@/views/auth/Login.vue')
+    component: () => import('@/views/user/auth/Login.vue')
   },
 
   // 忘记密码
   {
     path: '/forgot-password',
     name: 'ForgotPassword',
-    component: () => import('@/views/auth/ForgotPassword.vue')
+    component: () => import('@/views/user/auth/ForgotPassword.vue')
   },
   {
     path: '/auth/verify-register/:token',
     name: 'EmailVerification',
-    component: () => import('@/views/auth/EmailVerification.vue'),
+    component: () => import('@/views/user/auth/EmailVerification.vue'),
     props: true
   },
 
