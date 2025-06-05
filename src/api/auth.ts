@@ -51,3 +51,39 @@ export interface VerifyRegisterRequest {
 export const verifyRegister = async (token: string) => {
     await axios.post<void>(`${apiRoot}/auth/verify-register`, { token } as VerifyRegisterRequest)
 }
+
+export interface ForgotPasswordRequest {
+    /**
+     * 邮箱
+     */
+    email: string;
+    [property: string]: any;
+}
+
+/**
+ * 调用后端接口发送忘记密码邮件
+ * @param data 包含用户邮箱
+ */
+export const forgotPassword = async (data: ForgotPasswordRequest) => {
+  await axios.post(`${apiRoot}/auth/forgot-password`, data);
+};
+
+export interface ResetPasswordRequest {
+    /**
+     * 新密码，长度至少为 6
+     */
+    newPassword: string;
+    /**
+     * JWT 令牌
+     */
+    token: string;
+    [property: string]: any;
+}
+
+/**
+ * 调用后端接口重设密码
+ * @param data 包含新密码和令牌
+ */
+export const resetPassword = async (data: ResetPasswordRequest) => {
+  await axios.post(`${apiRoot}/auth/reset-password`, data);
+};
