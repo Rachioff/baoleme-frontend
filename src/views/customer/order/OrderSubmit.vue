@@ -6,7 +6,7 @@
                 <n-card class="order-card" :bordered="true">
                     <div class="order-content">
                         <div class="order-info">
-                            <n-avatar :src="item.image" :size=120 :bordered="true" />
+                            <n-avatar :src="item.cover.origin" :size=120 :bordered="true" />
                             <div class="order-text">
                                 <div class="item-name">{{ item.name }}</div>
                                 <div class="item-price">单价：¥{{ item.price.toFixed(2) }}</div>
@@ -23,7 +23,7 @@
                 </n-card>
 
                 <div class="remark-input">
-                    <n-input v-model:value="item.remark" placeholder="备注：如不要辣，去冰等" size="small" clearable />
+                    <!-- <n-input v-model:value="item.remark" placeholder="备注：如不要辣，去冰等" size="small" clearable /> -->
                 </div>
 
                 <n-divider />
@@ -31,9 +31,10 @@
         </div>
 
         <div class="order-summary">
-            <div>商品总价：¥{{ totalPrice.toFixed(2) }}</div>
+            <p>Summary</p>
+            <!-- <div>商品总价：¥{{ totalPrice.toFixed(2) }}</div>
             <div class="order-discount">优惠共减：¥{{ discount.toFixed(2) }}</div>
-            <div class="order-payable">实付：¥{{ payable.toFixed(2) }}</div>
+            <div class="order-payable">实付：¥{{ payable.toFixed(2) }}</div> -->
         </div>
 
         <div class="order-inputs">
@@ -47,8 +48,9 @@
 
         <!-- 底部栏 -->
         <div class="order-footer">
-            <div class="order-total">合计：¥{{ payable.toFixed(2) }}</div>
-            <n-button type="primary" @click="submit(items)">提交订单</n-button>
+            <p> 底部信息栏 </p>
+            <!-- <div class="order-total">合计：¥{{ payable.toFixed(2) }}</div> -->
+            <!-- <n-button type="primary" @click="submit(items)">提交订单</n-button> -->
             <!-- <n-modal v-model:show="showModal" preset="dialog" title="扫码付款" :closable="true" :mask-closable="false">
                 <div class="qrcode-container">
                     <n-image width="200" :src="qrCodeUrl" alt="付款码" />
@@ -67,20 +69,17 @@ import { type Item } from '@/types/order'
 // import submitOrder from '@/api/orders'
 
 // TODO:这里数据只是基本展示，实际应该从前端购物车获取，然后需要加上 remark字段
-const items = ref<Item[]>([
-    { id: 1, name: '炸鸡', price: 25, quantity: 1, image: 'https://via.placeholder.com/64', remark: '' },
-    { id: 2, name: '奶茶', price: 15, quantity: 2, image: 'https://via.placeholder.com/64', remark: '' }
-])
+const items = ref<Item[]>()
 
 const address = ref('')
 const note = ref('')
 
-const totalPrice = computed(() =>
-    items.value.reduce((sum, item) => sum + item.price * item.quantity, 0)
-)
+// const totalPrice = computed(() =>
+//     items.value.reduce((sum, item) => sum + item.price * item.quantity, 0)
+// )
 
-const discount = computed(() => (totalPrice.value >= 50 ? 5 : 0))
-const payable = computed(() => totalPrice.value - discount.value)
+// const discount = computed(() => (totalPrice.value >= 50 ? 5 : 0))
+// const payable = computed(() => totalPrice.value - discount.value)
 
 function increase(item: Item) {
     item.quantity++
@@ -96,7 +95,7 @@ async function submit(items: Item[]) {
     // showModal = true 
     try {
         // submitOrder(items)
-        message.success(`订单提交成功，实付 ¥${payable.value.toFixed(2)}`)
+        // message.success(`订单提交成功，实付 ¥${payable.value.toFixed(2)}`)
     } catch (error) {
         message.error('订单提交失败')
     }

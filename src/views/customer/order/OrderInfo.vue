@@ -7,7 +7,7 @@
             <div class="summary-wrapper">
                 <!-- 左侧头像与概要 -->
                 <div class="summary-left">
-                    <n-avatar v-if="order.items" :src="order?.items[0].image" :size="200" />
+                    <n-avatar v-if="order.items" :src="order?.items[0].cover.origin" :size="200" />
                     <div class="info-list">
                         <div class="store-name">{{ order.storeName }}</div>
                         <div class="order-time">{{ order.crea }}</div>
@@ -112,8 +112,6 @@ const order = ref<OrderInfo>({
             },
             quantity: 0,
             price: 0,
-            image: 'https://picsum.photos/seed/avatar/60',
-            remark: ''
         }
     ],
     deliveryFee: 0,

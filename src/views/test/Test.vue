@@ -85,8 +85,6 @@ const order = ref<OrderInfo>({
             },
             quantity: 0,
             price: 0,
-            image: 'https://picsum.photos/seed/avatar/60',
-            remark: ''
         },
         {
             id: "497f6eca-6276-4993-bfeb-53cbbbba6f08",
@@ -97,8 +95,6 @@ const order = ref<OrderInfo>({
             },
             quantity: 0,
             price: 0,
-            image: 'https://picsum.photos/seed/avatar/60',
-            remark: ''
         }
     ],
     deliveryFee: 0,

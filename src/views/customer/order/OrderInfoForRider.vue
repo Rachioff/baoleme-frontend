@@ -2,7 +2,7 @@
     <div class="rider-page">
         <n-card class="map-container">
             <div id="map-container">
-                <AmapMap />
+                <!-- <AmapMap /> -->
             </div>
         </n-card>
 
@@ -55,7 +55,7 @@
 import { ref, onMounted } from 'vue'
 import { useMessage } from 'naive-ui'
 import { ShopFilled, MessageFilled } from '@vicons/antd'
-import AmapMap from './AmapMap.vue'
+// import AmapMap from './AmapMap.vue'
 import { fetchOrderDetail } from '@/api/orders'
 import { useRoute } from 'vue-router'
 import { Status, type OrderInfo } from '@/types/order'
@@ -85,8 +85,6 @@ const order = ref<OrderInfo>({
             },
             quantity: 0,
             price: 0,
-            image: 'https://picsum.photos/seed/avatar/60',
-            remark: ''
         },
         {
             id: "497f6eca-6276-4993-bfeb-53cbbbba6f08",
@@ -97,8 +95,6 @@ const order = ref<OrderInfo>({
             },
             quantity: 0,
             price: 0,
-            image: 'https://picsum.photos/seed/avatar/60',
-            remark: ''
         }
     ],
     deliveryFee: 0,

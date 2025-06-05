@@ -43,7 +43,7 @@ export interface Delivery {
 
 export interface Item {
     cover: ImgURL;
-    id: null | string;
+    id: string;
     name: string;
     price: number;
     quantity: number;
@@ -183,16 +183,6 @@ export interface RecommendItem {
   rating: number
   price: number
   discount: string
-}
-
-// 这里是订单上的商品信息，后面还需要再
-export interface Item {
-    id: string | null
-    name: string
-    price: number
-    quantity: number
-    image: string
-    remark: string
 }
 
 // 、、、、、、、、、、、、、、、、、、、、、、
