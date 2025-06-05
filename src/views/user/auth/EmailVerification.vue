@@ -33,31 +33,30 @@ const errorMessage = ref<string | null>(null)
 const cardTitle = '邮箱验证'
 
 onMounted(async () => {
-    const token = route.params.token as string
-
-    if (!token) {
-        errorMessage.value = '无效的验证链接：未找到Token。'
-        verificationStatus.value = 'error'
-        loading.value = false
-        message.error(errorMessage.value)
-        return
-    }
-
+  const token = route.query.token as string | undefined;
+  console.log(token)
+  if (token) {
+    verificationStatus.value = 'verifying'
+    statusMessage.value = '正在验证您的邮箱...'
     try {
-        await verifyRegister(token)
-        verificationStatus.value = 'success'
-        message.success('邮箱验证成功！现在您可以登录您的账户了。')
+      await verifyRegister(token)
+      verificationStatus.value = 'success'
+      statusMessage.value = '邮箱验证成功！您现在可以登录了。'
+      message.success(statusMessage.value)
+      setTimeout(() => {
+        router.push('/login')
+      }, 3000)
     } catch (error: any) {
-        verificationStatus.value = 'error'
-        if (error.response && error.response.data && error.response.data.message) {
-        errorMessage.value = `验证失败：${error.response.data.message}`
-        } else {
-        errorMessage.value = '验证失败：链接可能已失效或服务器发生错误。'
-        }
-        message.error(errorMessage.value)
-    } finally {
-        loading.value = false
+      verificationStatus.value = 'failed'
+      statusMessage.value = error.response?.data?.message || '邮箱验证失败，链接可能无效或已过期。'
+      message.error(statusMessage.value)
+      console.error('Email verification failed:', error)
     }
+  } else {
+    verificationStatus.value = 'failed'
+    statusMessage.value = '无效的验证链接，未找到Token。'
+    message.error(statusMessage.value)
+  }
 })
 
 const resultStatus = computed(() => {

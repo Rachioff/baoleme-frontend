@@ -295,9 +295,11 @@ import {
   AlipayCircleFilled,
   MailFilled
 } from '@vicons/antd'
-import { type FormInst, type FormRules } from 'naive-ui'
+import { type FormInst, type FormRules, useMessage } from 'naive-ui'
+import { registerUser, type RegisterRequest } from '@/api/auth'
 
 const router = useRouter()
+const message = useMessage()
 const loading = ref(false)
 const rememberMe = ref(false)
 const serviceAgreementVisible = ref(false)
@@ -353,33 +355,85 @@ const registerRules: FormRules = {
 
 // 登录
 const handleLogin = () => {
-  loginFormRef.value?.validate((errors) => {
+  loginFormRef.value?.validate(async (errors) => {
     if (!errors) {
-      loading.value = true
-      
-      // 模拟登录请求
-      setTimeout(() => {
-        loading.value = false
-        console.log('登录信息:', loginForm)
-        router.push('/customer/home')
-      }, 1000)
+      loading.value = true;
+      try {
+        const loginData: LoginRequest = {
+          email: loginForm.email,
+          password: loginForm.password
+        };
+        const response = await loginUser(loginData);
+
+        await tokenStore.setToken(response.token, response.userId); 
+
+        message.success('登录成功！');
+        
+        router.push('/customer/home');
+
+      } catch (error: any) {
+        if (error.response) {
+          const statusCode = error.response.status;
+          const errorMsg = error.response.data?.message || '登录失败，请稍后重试。';
+          if (statusCode === 400) { 
+            message.error(`请求不合法: ${errorMsg}`);
+          } else if (statusCode === 403) {
+             const details = error.response.data?.errors?.map((e: any) => e.message).join(', ') || errorMsg;
+             message.error(`无权访问: ${details}`);
+          } else {
+            message.error(errorMsg);
+          }
+          console.error('Login API error:', error.response);
+        } else {
+          // 网络错误或其他
+          message.error('登录过程中发生非预期错误');
+          console.error('Network or other error during login:', error);
+        }
+      } finally {
+        loading.value = false;
+      }
+    } else {
+      message.error('请输入有效的邮箱和密码。');
     }
-  })
-}
+  });
+};
 
 // 注册
 const handleRegister = () => {
-  registerFormRef.value?.validate((errors) => {
+  registerFormRef.value?.validate(async (errors) => {
     if (!errors) {
       loading.value = true
       
-      // 模拟注册请求
-      setTimeout(() => {
+      try {
+        const payload: RegisterRequest = {
+          email: registerForm.email,
+          password: registerForm.password
+        }
+        await registerUser(payload) 
+        registerSuccessVisible.value = true 
+        
+      } catch (error: any) {
+        if (error.response) {
+          const statusCode = error.response.status;
+          const errorMsg = error.response.data?.message || '注册失败，请稍后重试。';
+          if (statusCode === 400) { 
+            message.error(`请求不合法: ${errorMsg}`);
+          } else if (statusCode === 403) {
+             const details = error.response.data?.errors?.map((e: any) => e.message).join(', ') || errorMsg;
+             message.error(`无权访问: ${details}`);
+          } else {
+            message.error(errorMsg);
+          }
+          console.error('Registration API error:', error.response);
+        } else {
+          message.error('注册过程中发生非预期错误');
+          console.error('Network or other error during registration:', error);
+        }
+      } finally {
         loading.value = false
-        console.log('注册信息:', registerForm)
-        // 显示注册成功的提示模态窗口
-        registerSuccessVisible.value = true
-      }, 1000)
+      }
+    } else {
+      message.error('请检查您填写的信息是否符合要求。')
     }
   })
 }

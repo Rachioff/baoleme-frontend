@@ -24,10 +24,10 @@ const routes: Array<RouteRecordRaw> = [
     component: () => import('@/views/user/auth/ForgotPassword.vue')
   },
   {
-    path: '/auth/verify-register/:token',
+    path: '/email-postprocess/verify-register',
     name: 'EmailVerification',
     component: () => import('@/views/user/auth/EmailVerification.vue'),
-    props: true
+    props: route => ({ query: route.query })
   },
 
   // 用户主页面

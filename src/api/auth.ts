@@ -2,6 +2,37 @@ import { apiRoot } from '@/config/api'
 import { useTokenStore } from '@/stores/token'
 import axios from 'axios'
 
+export interface LoginRequest {
+    email: string;
+    password: string;
+}
+
+export interface LoginResponse {
+    token: string;
+    userId: string;
+    role: string;
+}
+
+export interface RegisterRequest {
+    email: string;
+    password: string;
+    [property: string]: any;
+}
+
+export const loginUser = async (data: LoginRequest): Promise<LoginResponse> => {
+    // 建议路径为 /auth/login，如果后端是 /api/user/login，请修改此处
+    const response = await axios.post<LoginResponse>(`${apiRoot}/auth/login`, data);
+    return response.data;
+}
+
+/**
+ * 调用后端接口发起注册请求
+ * @param data 包含邮箱和密码的对象
+ */
+export const registerUser = async (data: RegisterRequest) => {
+    await axios.post(`${apiRoot}/auth/register`, data)
+}
+
 export const updateEmail = async (newEmail: string) => {
     await axios.post(`${apiRoot}/auth/update-email`, { newEmail }, {
         headers: { Authorization: `Bearer ${useTokenStore().token}` }
