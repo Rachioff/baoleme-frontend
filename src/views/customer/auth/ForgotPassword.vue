@@ -140,7 +140,7 @@ import {
   ArrowLeftOutlined,
   CheckCircleFilled
 } from '@vicons/antd'
-import { FormInst, FormRules } from 'naive-ui'
+import { type FormInst, type FormRules } from 'naive-ui'
 
 const router = useRouter()
 const loading = ref(false)
@@ -195,7 +195,7 @@ const passwordRules: FormRules = {
 const getVerificationCode = () => {
   if (codeCooldown.value > 0) return
   
-  emailFormRef.value?.validate(['email'], (errors) => {
+  emailFormRef.value?.validate((errors) => {
     if (!errors) {
       loading.value = true
       
