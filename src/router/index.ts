@@ -1,7 +1,7 @@
 // src/router/index.ts
 import { createRouter, createWebHistory } from 'vue-router'
 import type { RouteRecordRaw } from 'vue-router'
-import Login from '@/views/customer/auth/Login.vue'
+import Login from '@/views/user/auth/Login.vue'
 import { defineAsyncComponent } from 'vue'
 
 const routes: Array<RouteRecordRaw> = [
@@ -14,14 +14,20 @@ const routes: Array<RouteRecordRaw> = [
   {
     path: '/login',
     name: 'Login',
-    component: () => import('@/views/customer/auth/Login.vue')
+    component: () => import('@/views/user/auth/Login.vue')
   },
 
   // 忘记密码
   {
     path: '/forgot-password',
     name: 'ForgotPassword',
-    component: () => import('@/views/customer/auth/ForgotPassword.vue')
+    component: () => import('@/views/user/auth/ForgotPassword.vue')
+  },
+  {
+    path: '/auth/verify-register/:token',
+    name: 'EmailVerification',
+    component: () => import('@/views/user/auth/EmailVerification.vue'),
+    props: true
   },
 
   // 用户主页面
@@ -55,7 +61,7 @@ const routes: Array<RouteRecordRaw> = [
     component: () => import('@/views/merchant/ShopList.vue'),
   },
   {
-    path: '/merchant/shops/create', // 新增：创建店铺的路由
+    path: '/merchant/shops/create', // 创建店铺的路由
     name: 'MerchantShopCreate',
     component: () => import('@/views/merchant/ShopCreateForm.vue'),
   },
