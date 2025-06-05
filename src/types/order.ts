@@ -1,4 +1,6 @@
+import type { Address } from './address'
 // 数据模型管理
+
 export interface OrderItem {
   id: number
   storeName: string
@@ -28,4 +30,37 @@ export interface RecommendItem {
   rating: number
   price: number
   discount: string
+}
+
+export interface createOrderreturn {
+    id: string;
+    status: OrderStatus;
+    createdAt: Date;
+    paidAt?: Date;
+    preparedAt?: Date;
+    deliveredAt?: Date;
+    finishedAt?: Date;
+    canceledAt?: Date;
+    customer: string;
+    shop: string;
+    rider?: string;
+    items: OrderItem[];
+    deliveryFee: number;
+    total: number;
+    note?: string;
+    delivery: {
+        latitude: number;
+        longitude: number;
+    };
+    shopAddress: Address;
+    customerAddress: Address;
+}
+
+export enum OrderStatus {
+    Unpaid = "unpaid",
+    Preparing = "preparing",
+    Prepared = "prepared",
+    Delivering = "delivering",
+    Finished = "finished",
+    Canceled = "canceled"
 }
