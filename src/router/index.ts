@@ -117,6 +117,10 @@ const routes: Array<RouteRecordRaw> = [
     props: true, // productId 会被传递
     meta: { requiresAuth: true, role: 'merchant' }
   },
+  {path: '/merchant/shop/ShopCommentList',
+    name: 'ShopCommentList',
+    component: () => import('@/views/merchant/shop/ShopCommentList.vue'),
+    meta: { requiresAuth: true, role: 'merchant' }},
   {
     path: '/merchant/products/:productId',
     name: 'MerchantProductDetail',
@@ -143,6 +147,7 @@ const routes: Array<RouteRecordRaw> = [
     component: () => import('@/views/customer/order/OrderComment.vue'),
     meta: { requiresAuth: true }
   },
+
 ]
 
 const router = createRouter({

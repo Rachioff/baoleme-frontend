@@ -23,6 +23,15 @@ export interface UserData extends UserInfo, UserProfile {
     }
 }
 
+export interface UserConmment {
+    id: string
+    name: string
+    avatar: {
+        origin: string
+        thumbnail: string
+    }
+}
+
 export const getDisplayUserRole = (role?: string) => {
     switch (role) {
         case 'admin':
