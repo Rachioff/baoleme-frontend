@@ -21,7 +21,21 @@ const routes: Array<RouteRecordRaw> = [
   {
     path: '/forgot-password',
     name: 'ForgotPassword',
-    component: () => import('@/views/customer/auth/ForgotPassword.vue')
+    component: () => import('@/views/user/auth/ForgotPassword.vue')
+  },
+  {
+    path: '/email-postprocess/reset-password',
+    name: 'ResetPasswordEmail',
+    component: () => import('@/views/user/auth/ResetPasswordEmail.vue'),
+    props: route=> ({ query: route.query})
+  },
+
+  // 注册验证
+  {
+    path: '/email-postprocess/verify-register',
+    name: 'EmailVerification',
+    component: () => import('@/views/user/auth/EmailVerification.vue'),
+    props: route => ({ query: route.query })
   },
 
   // 用户主页面
@@ -145,6 +159,13 @@ const routes: Array<RouteRecordRaw> = [
     path: '/comments',
     name: 'Comments',
     component: () => import('@/views/customer/order/OrderComment.vue'),
+  }
+
+  {
+    path: '/rider/recommend',
+    name: 'Recommend',
+    component: () => import('@/views/rider/Recommend.vue'),
+
     meta: { requiresAuth: true }
   },
 
