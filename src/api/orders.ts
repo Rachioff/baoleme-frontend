@@ -2,7 +2,7 @@ import axios from 'axios'
 import { ref, onMounted } from 'vue'
 import { apiRoot } from '@/config/api'
 import { useTokenStore } from '@/stores/token'
-import type { createOrderreturn,OrderStatus, type ItemInfo, type OrderInfo, type OrderInfoForShopAndrider, type OrderList } from '@/types/order'
+import type { createOrderreturn,Status, ItemInfo, OrderInfo,OrderInfoForShopAndrider, OrderList } from '@/types/order'
 
 export async function fetch
 (page: number, pageSize: number, s: string) {
@@ -78,27 +78,6 @@ export async function postOrder(shopId: string, addressId: string, note: string)
   return res.data as OrderList[]
 }
 
-export const createOrder = async (shopId: string,addressId: string,note?: string) => {
-    const res = await axios.post(`${apiRoot}/orders`, {
-        headers: { 
-            Authorization: `Bearer ${useTokenStore().token}`
-        }
-    })
-    return res.data as createOrderreturn
-}
-
-export const updateOrderStatus = async (orderId: string, status: OrderStatus) => {
-  const res = await axios.patch(`${apiRoot}/orders/${orderId}/status`, 
-    { status },
-    {
-      headers: { 
-        Authorization: `Bearer ${useTokenStore().token}`
-      }
-    }
-  );
-  return res.data as createOrderreturn;
-}
-
 export async function getOrder(orderId: number) {
   const res = await axios.patch(`${apiRoot}/orders/${orderId}/rider`, {
     headers: {Authorization: `Bearer ${useTokenStore().token}`}
@@ -123,4 +102,25 @@ export async function deleteCanceledOrder(id: string) {
   })
 
   return res.data
+}
+
+export const createOrder = async (shopId: string,addressId: string,note?: string) => {
+    const res = await axios.post(`${apiRoot}/orders`, {
+        headers: { 
+            Authorization: `Bearer ${useTokenStore().token}`
+        }
+    })
+    return res.data as createOrderreturn
+}
+
+export const updateOrderStatus = async (orderId: string, status: Status) => {
+  const res = await axios.patch(`${apiRoot}/orders/${orderId}/status`, 
+    { status },
+    {
+      headers: { 
+        Authorization: `Bearer ${useTokenStore().token}`
+      }
+    }
+  );
+  return res.data as createOrderreturn;
 }
