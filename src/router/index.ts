@@ -61,33 +61,7 @@ const routes: Array<RouteRecordRaw> = [
     component: () => import('@/views/merchant/ShopList.vue'),
   },
   {
-    path: '/:catchAll(.*)*',
-    name: 'NotFound',
-    component: () => import('@/views/result/404.vue')
-  },
-  {
-    path: '/user/:userId',
-    name: 'UserProfile',
-    component: () => import('@/views/user/UserView.vue'),
-    props: true
-  },
-  {
-    path: '/customer/order/submit',
-    name: 'OrderSubmit',
-    component: () => import('@/views/customer/order/OrderSubmit.vue')
-  },
-  {
-    path: '/order/getsubmit',
-    name: 'GetOrderSubmit',
-    component: () => import('@/views/customer/order/GetOrder.vue')
-  }, 
-  {
-    path: '/rider/order/:id',
-    name: 'OrderForRider',
-    component: () => import('@/views/customer/order/OrderInfoForRider.vue')
-  }, 
-  {
-    path: '/merchant/shops/create', // 新增：创建店铺的路由
+    path: '/merchant/shops/create', // 创建店铺的路由
     name: 'MerchantShopCreate',
     component: () => import('@/views/merchant/ShopCreateForm.vue'),
   },
@@ -136,13 +110,6 @@ const routes: Array<RouteRecordRaw> = [
     path: '/shop-statistics',
     name: 'ShopStatistics',
     component: () => import('@/views/merchant/shop/ShopStatistics.vue')
-  },
-    // 下单页面
-  {
-    path: '/checkout',
-    name: 'Checkout',
-    component: () => import('@/views/customer/order/Checkout.vue'),
-    meta: { requiresAuth: true }
   },
 ]
 
