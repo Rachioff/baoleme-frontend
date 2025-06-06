@@ -70,13 +70,9 @@ import axios from 'axios'
 import type { UserConmment } from '@/types/user'
 import type { Comment } from '@/types/comment'
 import type { ShopInfo } from '@/types/shop'
-
-const props = defineProps({
-  shopId: {
-    type: String,
-    required: true
-  }
-})
+import { useRoute } from 'vue-router'
+const route = useRoute()
+const shopId = route.params.id as string
 
 const shopInfo = ref<ShopInfo | null>(null)
 const reviews = ref<Comment[]>([])
@@ -113,7 +109,7 @@ const getRatingDescription = (rating: number) => {
 // 获取店铺信息
 const fetchShopInfo = async () => {
   try {
-    const response = await axios.get(`/shops/${props.shopId}`)
+    const response = await axios.get(`/shops/${shopId}`)
     shopInfo.value = response.data
   } catch (error) {
     console.error('获取店铺信息失败:', error)
@@ -127,7 +123,7 @@ const fetchReviews = async (reset = false) => {
   loading.value = true
   try {
     const currentPage = reset ? 0 : page.value
-    const response = await axios.get(`/shops/${props.shopId}/comments`, {
+    const response = await axios.get(`/shops/${shopId}/comments`, {
       params: {
         p: currentPage,
         pn: pageSize.value
