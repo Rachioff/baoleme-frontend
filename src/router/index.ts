@@ -157,7 +157,13 @@ const routes: Array<RouteRecordRaw> = [
     component: () => import('@/views/rider/Recommend.vue'),
     meta: { requiresAuth: true }
   },
-
+  // 顾客店铺列表页
+  {
+    path: '/customer/shops',
+    name: 'CustomerShopList',
+    component: () => import('@/views/customer/shop/ShopListView.vue'),
+    props: route => ({ query: route.query })
+  },
 ]
 
 const router = createRouter({
