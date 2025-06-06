@@ -22,21 +22,16 @@ import { computed, onMounted, onUnmounted } from 'vue'
 const route = useRoute()
 
 // 控制底部导航栏显示的逻辑
+// 在登录、注册等页面不显示底部导航
 const showBottomNav = computed(() => {
-  // 不需要显示底部导航的路由列表，注意，在feature-auth中由于更新了鉴权逻辑，所以这里的逻辑受牵连，若出现冲突，以此为准
-  const hideNavRouteNames = [
-    'Login',
-    'ForgotPassword',
-    'EmailVerification',
-    'ResetPasswordEmail',
-    'UpdateEmail',
-    'VerifyUpdateEmail',
-    
+  // 不需要显示底部导航的路由列表
+  const hideNavRoutes = [
+    '/',
+    '/login',
+    '/register',
+    '/forgot-password'
   ]
-  if (route.path === '/' || (route.name && hideNavRouteNames.includes(route.name as string))) {
-    return false
-  }
-  return true
+  return !hideNavRoutes.includes(route.path)
 })
 
 // 滚动条相关逻辑
