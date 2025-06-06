@@ -23,6 +23,7 @@ const routes: Array<RouteRecordRaw> = [
     name: 'ForgotPassword',
     component: () => import('@/views/user/auth/ForgotPassword.vue')
   },
+  // 修改密码验证
   {
     path: '/email-postprocess/reset-password',
     name: 'ResetPasswordEmail',
@@ -36,6 +37,20 @@ const routes: Array<RouteRecordRaw> = [
     name: 'EmailVerification',
     component: () => import('@/views/user/auth/EmailVerification.vue'),
     props: route => ({ query: route.query })
+  },
+  // 更新邮箱
+  {
+    path: '/user/update-email',
+    name: 'UpdateEmail',
+    component: () => import('@/views/user/auth/UpdateEmail.vue'),
+    meta: { requiresAuth: true },
+  },
+  // 更新邮箱验证
+  {
+    path: '/email-postprocess/verify-email',
+    name: 'VerifyUpdateEmail',
+    component: () => import('@/views/user/auth/EmailVerification.vue'),
+    props: true
   },
 
   // 用户主页面

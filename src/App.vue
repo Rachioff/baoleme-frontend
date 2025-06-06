@@ -29,6 +29,8 @@ const showBottomNav = computed(() => {
     'ForgotPassword',
     'EmailVerification',
     'ResetPasswordEmail',
+    'UpdateEmail',
+    'VerifyUpdateEmail',
     
   ]
   if (route.path === '/' || (route.name && hideNavRouteNames.includes(route.name as string))) {

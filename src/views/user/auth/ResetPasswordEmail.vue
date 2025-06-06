@@ -122,8 +122,6 @@
     password: [
       { required: true, message: '请输入新密码', trigger: ['input', 'blur'] },
       { min: 6, message: '密码长度至少为6位', trigger: ['input', 'blur'] },
-      // 你可以根据需要添加更复杂的密码规则，例如包含字母和数字
-      // { pattern: /^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d]{6,}$/, message: '密码必须包含字母和数字', trigger: 'blur' }
     ],
     confirmPassword: [
       { required: true, message: '请再次输入新密码', trigger: ['input', 'blur'] },

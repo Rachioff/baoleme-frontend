@@ -88,3 +88,19 @@ export interface ResetPasswordRequest {
 export const resetPassword = async (data: ResetPasswordRequest) => {
   await axios.post(`${apiRoot}/auth/reset-password`, data);
 };
+
+export interface VerifyEmailRequest {
+    /**
+     * JWT 令牌
+     */
+    token: string;
+    [property: string]: any;
+}
+
+/**
+ * 调用后端接口，使用token验证新的邮箱地址
+ * @param token 从邮件链接中获取的JWT令牌
+ */
+export const verifyEmail = async (token: string) => {
+    await axios.post<void>(`${apiRoot}/auth/verify-email`, { token } as VerifyEmailRequest);
+}
