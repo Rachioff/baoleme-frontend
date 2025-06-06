@@ -44,7 +44,7 @@ onMounted(async () => {
       statusMessage.value = '邮箱验证成功！您现在可以登录了。'
       message.success(statusMessage.value)
       setTimeout(() => {
-        router.push({ name: 'Login' })
+        router.push('/login')
       }, 3000)
     } catch (error: any) {
       verificationStatus.value = 'failed'

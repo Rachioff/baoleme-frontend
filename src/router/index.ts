@@ -23,20 +23,12 @@ const routes: Array<RouteRecordRaw> = [
     name: 'ForgotPassword',
     component: () => import('@/views/user/auth/ForgotPassword.vue')
   },
-  // 注册邮箱验证
   {
     path: '/email-postprocess/verify-register',
-    name: 'VerifyRegisterEmail',
-    component: () => import('@/views/user/auth/VerifyRegisterEmail.vue'),
+    name: 'EmailVerification',
+    component: () => import('@/views/user/auth/EmailVerification.vue'),
     props: route => ({ query: route.query })
   },
-  // 忘记密码邮箱验证
-  {
-    path: '/email-postprocess/verify-email',
-    name: 'ResetPasswordEmail',
-    component: () => import('@/views/user/auth/ResetPasswordEmail.vue'),
-    props: route=> ({ query: route.query})
-  }, 
 
   // 用户主页面
   {
