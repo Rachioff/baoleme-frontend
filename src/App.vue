@@ -43,6 +43,8 @@ const showBottomNav = computed(() => {
     'ResetPasswordEmail',
     'UpdateEmail',
     'VerifyUpdateEmail',
+    'CustomerShopProducts',
+    
   ];
   if (route.path === '/' || (route.name && hideNavRouteNames.includes(route.name as string))) {
     return false;

@@ -174,6 +174,12 @@ const routes: Array<RouteRecordRaw> = [
     component: () => import('@/views/customer/shop/ShopListView.vue'),
     props: route => ({ query: route.query })
   },
+  {
+    path: '/customer/shops/:shopId', // 使用 :shopId 动态匹配店铺ID
+    name: 'CustomerShopProducts',
+    component: () => import('@/views/customer/shop/ShopProductsView.vue'),
+    props: true // 自动将路由参数 (shopId) 作为 props 传递给组件
+  },
 ]
 
 const router = createRouter({
