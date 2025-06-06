@@ -54,124 +54,101 @@
   </div>
 </template>
 
-<script lang="ts">
-import { defineComponent, ref, onMounted } from 'vue'
+<script lang="ts" setup>
+import { ref, onMounted } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import { NButton, NIcon, NAvatar, NRate, NInput } from 'naive-ui'
-import { ArrowBack } from '@vicons/ionicons5'
-import { Flower } from '@vicons/ionicons5'
+import { ArrowBack, Flower } from '@vicons/ionicons5'
 import axios from 'axios'
-import type { ShopInfo } from '@/types/shop'
 
-export default defineComponent({
-  name: 'EvaluationPage',
-  components: {
-    NButton,
-    NIcon,
-    NAvatar,
-    NRate,
-    NInput,
-    ArrowBack,
-    Flower
-  },
-  setup() {
-    const router = useRouter()
-    const route = useRoute()
-    const rating = ref(0)
-    const comment = ref('')
-    const orderId = route.params.id as string
-    const shopInfo = ref<ShopInfo>({
-      name: '',
-      id: '',
-      owner: '',
-      createdAt: '',
-      description: '',
-      categories: [],
-      address: {
-        coordinate: [],
-        province: '',
-        city: '',
-        district: '',
-        address: '',
-        name: '',
-        tel: ''
-      },
-      verified: false,
-      opened: false,
-      openTimeStart: 0,
-      openTimeEnd: 0,
-      cover: {
-        origin: '',
-        thumbnail: '',
-      },
-      detailImage: {
-        origin: '',
-        thumbnail: '',
-      },
-      license: {
-        origin: '',
-        thumbnail: '',
-      },
-      deliveryThreshold: 0,
-      deliveryPrice: 0,
-      maximumDistance: 0,
-      rating: 0,
-      sale: 0,
-      averagePrice: 0,
-    })
+const router = useRouter()
+const route = useRoute()
+const rating = ref(0)
+const comment = ref('')
+const orderId = route.params.id as string
 
-    const getOrderInfo = async () => {
-      try {
-        const response = await axios.get(`/orders/${orderId}`)
-        const shopId = response.data.shopId
-        const shopResponse = await axios.get(`/shops/${shopId}`)
-        shopInfo.value = shopResponse.data
-      } catch (error) {
-        console.error('获取订单信息失败:', error)
-      }
-    }
 
-    onMounted(() => {
-      getOrderInfo()
-    })
-
-    const goBack = () => {
-      router.go(-1)
-    }
-
-    const submitEvaluation = async () => {
-      if (rating.value === 0) {
-        window.alert('请先评分')
-        return
-      }
-      
-      try {
-        const response = await axios.post('/comments', {
-          order: orderId,
-          rating: rating.value,
-          content: comment.value
-        })
-        
-        console.log('评价提交成功:', response.data)
-        window.alert('评价提交成功！')
-        router.go(-1)
-      } catch (error) {
-        console.error('评价提交失败:', error)
-        window.alert('评价提交失败,请稍后重试')
-      }
-    }
-
-    return {
-      rating,
-      comment,
-      shopInfo,
-      goBack,
-      submitEvaluation
-    }
-  }
+const shopInfo = ref({
+  name: '',
+  id: '',
+  owner: '',
+  createdAt: '',
+  description: '',
+  categories: [] as string[],
+  address: {
+    coordinate: [],
+    province: '',
+    city: '',
+    district: '',
+    address: '',
+    name: '',
+    tel: ''
+  } ,
+  verified: false,
+  opened: false,
+  openTimeStart: 0,
+  openTimeEnd: 0,
+  cover: {
+    origin: '',
+    thumbnail: '',
+  } ,
+  detailImage: {
+    origin: '',
+    thumbnail: '',
+  } ,
+  license: {
+    origin: '',
+    thumbnail: '',
+  } ,
+  deliveryThreshold: 0,
+  deliveryPrice: 0,
+  maximumDistance: 0,
+  rating: 0,
+  sale: 0,
+  averagePrice: 0,
 })
-</script>
 
+const getOrderInfo = async () => {
+  try {
+    const response = await axios.get(`/orders/${orderId}`)
+    const shopId = response.data.shopId
+    const shopResponse = await axios.get(`/shops/${shopId}`)
+    shopInfo.value = shopResponse.data
+  } catch (error) {
+    console.error('获取订单信息失败:', error)
+  }
+}
+
+onMounted(() => {
+  getOrderInfo()
+})
+
+const goBack = () => {
+  router.go(-1)
+}
+
+const submitEvaluation = async () => {
+  if (rating.value === 0) {
+    window.alert('请先评分')
+    return
+  }
+  
+  try {
+    const response = await axios.post('/comments', {
+      order: orderId,
+      rating: rating.value * 10, // 转换为10-50的评分
+      content: comment.value
+    })
+    
+    console.log('评价提交成功:', response.data)
+    window.alert('评价提交成功！')
+    router.go(-1)
+  } catch (error) {
+    console.error('评价提交失败:', error)
+    window.alert('评价提交失败,请稍后重试')
+  }
+}
+</script>
 
 <style scoped>
 .evaluation-page {
