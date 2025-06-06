@@ -8,20 +8,20 @@
                 <n-space align="start" :wrap="false" size="large">
                     <!-- 左侧：头像与店铺信息 -->
                     <div class="order-left">
-                        <n-avatar round :size="80" :src="order.storeAvatar" />
+                        <n-avatar :size="80" :src="order.storeAvatar" />
                     </div>
 
                     <!-- 右侧：订单详情 -->
                     <div class="order-right">
                         <div class="order-detail-time">下单时间：{{ order.time }}</div>
-                        <div class="order-items">{{ order.items.join('、') }}</div>
+                        <div class="order-items">{{ order.item.join('、') }}</div>
                         <div class="order-total">￥{{ order.total }}</div>
                     </div>
                 </n-space>
             </div>
             <!-- 送餐进度条 -->
             <div style="overflow-x: auto" class="timeline-container">
-                <template v-if="order.status !== '已完成'">
+                <template v-if="order.status !== Status.Finished">
                     <!-- 横向进度条 -->
                     <n-timeline horizontal>
                         <n-timeline-item v-for="(step, index) in steps" :key="index"
@@ -48,7 +48,8 @@
 <script setup lang="ts">
 import { ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
-import { type OrderItem } from '@/types/order'
+import { Status, type OrderInfo, type OrderItem } from '@/types/order'
+import { useTokenStore } from '@/stores/token'
 
 const route = useRoute()
 const router = useRouter()
@@ -62,7 +63,7 @@ const isShowTimeline = (status: string) => {
 // 组件参数
 const { order } = defineProps({
     order: {
-        type: Object as () => OrderItem,
+        type: Object as () => OrderInfo,
         required: true
     }
 })
@@ -103,33 +104,35 @@ const steps = [
 
 const currentStep = ref(3) // 当前步骤索引
 
-const getOrderItem = (id: number) => {
+const getOrderItem = (id: string) => {
     console.log('获取订单详情', id)
-    if (route.path != null) {
+    if (useTokenStore().role != 'rider') {
         router.push({ path: '/customer/order/:id', query: { id } }) // 添加路由参数
+    } else if (useTokenStore().role == 'rider') {
+        router.push({ path: '/rider/order/:id', query: { id } })
     }
 }
 
 // TODO：按钮逻辑
-const evaluate = (order: OrderItem) => {
+const evaluate = (order: OrderInfo) => {
     // 跳转评价页面或弹出评价窗口
     console.log('评价', order)
     alert("Not implemented")
 }
 
-const viewInvoice = (order: OrderItem) => {
+const viewInvoice = (order: OrderInfo) => {
     // 打开发票详情
     console.log('查看发票', order)
     alert("Not implemented")
 }
 
-const deleteOrder = (order: OrderItem) => {
+const deleteOrder = (order: OrderInfo) => {
     // 弹出确认框并删除
     console.log('删除订单', order)
     alert("Not implemented")
 }
 
-const buyAgain = (order: OrderItem) => {
+const buyAgain = (order: OrderInfo) => {
     // 跳转购买流程
     console.log('再次购买', order)
     alert("Not implemented")
@@ -158,7 +161,7 @@ const buyAgain = (order: OrderItem) => {
     box-shadow: 0 6px 16px rgba(0, 0, 0, 0.1);
 }
 
-.order-card-info {
+/* .order-card-info {
     padding: 16px;
     border: 1px solid #e5e7eb;
     border-radius: 12px;
@@ -166,12 +169,12 @@ const buyAgain = (order: OrderItem) => {
     box-shadow: 0 1px 4px rgba(0, 0, 0, 0.05);
     margin: 8px 5px;
     transition: transform 0.2s ease, box-shadow 0.2s ease;
-}
+} */
 
-.order-card-info:hover {
+/* .order-card-info:hover {
     transform: translateY(-2px);
     box-shadow: 0 6px 16px rgba(0, 0, 0, 0.1);
-}
+} */
 
 .order-left {
     display: flex;
