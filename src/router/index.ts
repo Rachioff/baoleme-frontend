@@ -159,8 +159,7 @@ const routes: Array<RouteRecordRaw> = [
     path: '/comments',
     name: 'Comments',
     component: () => import('@/views/customer/order/OrderComment.vue'),
-  }
-
+  },
   {
     path: '/rider/recommend',
     name: 'Recommend',
