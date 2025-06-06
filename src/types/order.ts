@@ -23,19 +23,7 @@ export interface OrderList {
     total: number;
 }
 
-/**
- * Address
- */
-export interface Address {
-    address: string;
-    city: string;
-    coordinate: number[];
-    district: string;
-    name: string;
-    province: string;
-    tel: string;
-    town: string;
-}
+
 
 export interface Delivery {
     latitude: number;
@@ -185,7 +173,7 @@ export interface RecommendItem {
 
 export interface createOrderreturn {
     id: string;
-    status: OrderStatus;
+    status: Status;
     createdAt: Date;
     paidAt?: Date;
     preparedAt?: Date;
@@ -207,14 +195,6 @@ export interface createOrderreturn {
     customerAddress: Address;
 }
 
-export enum OrderStatus {
-    Unpaid = "unpaid",
-    Preparing = "preparing",
-    Prepared = "prepared",
-    Delivering = "delivering",
-    Finished = "finished",
-    Canceled = "canceled"
-}
 // 、、、、、、、、、、、、、、、、、、、、、、
 export interface ItemBaseInfo {
     createdAt: Date;

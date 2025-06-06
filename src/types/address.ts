@@ -7,4 +7,5 @@ export interface Address {
   district: string;
   address: string;
   isDefault: boolean;
+  coordinate: number[];
 }

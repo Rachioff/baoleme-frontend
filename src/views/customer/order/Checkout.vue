@@ -197,7 +197,7 @@ import { createOrder ,updateOrderStatus } from '@/api/orders'
 import type { Address } from '@/types/address'
 import { useMessage } from 'naive-ui'
 import type { CartItem } from '@/types/cart'
-import { OrderStatus } from '@/types/order'
+import { Status } from '@/types/order'
 const router = useRouter()
 const route = useRoute()
 const message = useMessage()
@@ -283,7 +283,7 @@ const cancelPayment = () => {
 // 确认支付
 const confirmPayment = async () => {
   try {
-    const result = await updateOrderStatus(createdOrderId,OrderStatus.Preparing)
+    const result = await updateOrderStatus(createdOrderId,Status.Preparing)
     if (result) {
       message.success('支付成功')
       router.push(`/customer/order/${createdOrderId}`)
