@@ -136,6 +136,12 @@ const routes: Array<RouteRecordRaw> = [
     component: () => import('@/views/customer/order/Checkout.vue'),
     meta: { requiresAuth: true }
   },
+  {
+    path: '/rider/recommend',
+    name: 'Recommend',
+    component: () => import('@/views/rider/Recommend.vue'),
+    meta: { requiresAuth: true }
+  },
 ]
 
 const router = createRouter({
