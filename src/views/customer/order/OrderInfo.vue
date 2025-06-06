@@ -39,7 +39,7 @@
                                 <p>收货人：{{ order.customer }}</p>
                                 <p>联系电话：{{ order.customerAddress.tel }}</p>
                                 <p>地址：{{ order.customerAddress.address }} {{ order.customerAddress.city }} {{ order.customerAddress.district }}
-                                    {{ order.customerAddress.town }} {{ order.customerAddress.address }}</p>
+                                    {{ order.customerAddress.address }}</p>
                             </n-collapse-item>
 
                             <n-collapse-item title="物流信息" name="3">
@@ -122,25 +122,27 @@ const order = ref<OrderInfo>({
         longitude: 0
     },
     shopAddress: {
+        id: '1',
+        isDefault: true,
         coordinate: [
             0
         ],
         province: "北京",
         city: "北京",
         district: "海淀区",
-        town: "花园路街道",
         address: "学院路37号北京航空航天大学学生1公寓邮局旁外卖柜",
         name: "string",
         tel: "string"
     },
     customerAddress: {
+        id: '2',
+        isDefault: false,
         coordinate: [
             0
         ],
         province: "北京",
         city: "北京",
         district: "海淀区",
-        town: "花园路街道",
         address: "学院路37号北京航空航天大学学生1公寓邮局旁外卖柜",
         name: "string",
         tel: "string"

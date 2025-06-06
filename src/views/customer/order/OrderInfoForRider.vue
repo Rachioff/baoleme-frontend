@@ -105,25 +105,27 @@ const order = ref<OrderInfo>({
         longitude: 0
     },
     shopAddress: {
+        id: '1',
+        isDefault: true, 
         coordinate: [
             0
         ],
         province: "北京",
         city: "北京",
         district: "海淀区",
-        town: "花园路街道",
         address: "学院路37号北京航空航天大学学生1公寓邮局旁外卖柜",
         name: "string",
         tel: "string"
     },
     customerAddress: {
+        id: '1',
+        isDefault: false,
         coordinate: [
             0
         ],
         province: "北京",
         city: "北京",
         district: "海淀区",
-        town: "花园路街道",
         address: "学院路37号北京航空航天大学学生1公寓邮局旁外卖柜",
         name: "string",
         tel: "string"

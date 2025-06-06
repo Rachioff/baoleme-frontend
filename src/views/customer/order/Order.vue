@@ -50,7 +50,7 @@ import { NTabs, NTabPane, NSpace } from 'naive-ui'
 import OrderCard from '@/components/card/OrderCard.vue'
 import { SearchOutlined } from '@vicons/antd'
 import { Status, type OrderInfo, type OrderItem, type OrderList } from '@/types/order' // 导入数据类型
-import { fetchOrders, fetchCustomerOrderList, fetchShopOrderList, fetchRiderOrderList} from '@/api/orders'
+import { fetchCustomerOrderList, fetchShopOrderList, fetchRiderOrderList} from '@/api/orders'
 import { useTokenStore } from '@/stores/token'
 
 const route = useRoute()
@@ -76,8 +76,9 @@ const loadData = async () => {
       case "merchant":
         orders.value = await fetchShopOrderList(page.value, pageSize, status.value as string, useTokenStore().userId as string)
         break;
-      case "admin":
-        orders.value = await fetchOrders(page.value, pageSize, status.value as string)
+      // 不知何用
+      // case "admin":
+      //   orders.value = await fetchOrders(page.value, pageSize, status.value as string)
       case "rider":
         orders.value = await fetchRiderOrderList(page.value, pageSize, status.value as string)
       default:
