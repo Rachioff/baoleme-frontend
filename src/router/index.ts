@@ -129,6 +129,13 @@ const routes: Array<RouteRecordRaw> = [
     name: 'ShopStatistics',
     component: () => import('@/views/merchant/shop/ShopStatistics.vue')
   },
+    // 下单页面
+  {
+    path: '/checkout',
+    name: 'Checkout',
+    component: () => import('@/views/customer/order/Checkout.vue'),
+    meta: { requiresAuth: true }
+  },
 ]
 
 const router = createRouter({
