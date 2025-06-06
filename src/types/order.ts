@@ -214,7 +214,7 @@ export enum OrderStatus {
     Delivering = "delivering",
     Finished = "finished",
     Canceled = "canceled"
-
+}
 // 、、、、、、、、、、、、、、、、、、、、、、
 export interface ItemBaseInfo {
     createdAt: Date;
