@@ -136,6 +136,13 @@ const routes: Array<RouteRecordRaw> = [
     component: () => import('@/views/customer/order/Checkout.vue'),
     meta: { requiresAuth: true }
   },
+   //评价页面
+  {
+    path: '/comment',
+    name: 'Comment',
+    component: () => import('@/views/customer/order/OrderComment.vue'),
+    meta: { requiresAuth: true }
+  },
 ]
 
 const router = createRouter({
