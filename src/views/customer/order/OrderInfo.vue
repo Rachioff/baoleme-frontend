@@ -7,10 +7,10 @@
             <div class="summary-wrapper">
                 <!-- 左侧头像与概要 -->
                 <div class="summary-left">
-                    <n-avatar v-if="order.items" :src="order?.items[0].cover.origin" :size="200" />
+                    <n-avatar :src="order.storeAvatar" round size="60" />
                     <div class="info-list">
                         <div class="store-name">{{ order.storeName }}</div>
-                        <div class="order-time">{{ order.crea }}</div>
+                        <div class="order-time">{{ order.orderTime }}</div>
                     </div>
                 </div>
 
@@ -19,39 +19,32 @@
                     <div class="store-link">店铺链接 →</div>
                     <div class="detail-wrapper">
                         <div class="actions">
-                            <n-button strong size="small" @click="evaluate(order)">评价</n-button>
-                            <n-button strong size="small" secondary @click="buyAgain(order)">再次购买</n-button>
-                            <n-button strong size="small" tertiary type="error" @click="feedback(order)">反馈</n-button>
+                            <n-button strong size="small">评价</n-button>
+                            <n-button strong size="small" secondary>再次购买</n-button>
+                            <n-button strong size="small" tertiary type="error">反馈</n-button>
                         </div>
 
                         <n-collapse class="order-info-collapse">
                             <n-collapse-item title="交易信息" name="1">
                                 <p>实付：￥{{ order.total }}</p>
-                                <p>配送费：￥{{ order.deliveryFee }}</p>
-                                <p>合计：￥{{ order.total && order.total + order.deliveryFee }}</p>
+                                <p>共减：￥{{ order.discount}}</p>
+                                <p>合计：￥{{ order.total + order.discount }}</p>
                                 <p>订单号：{{ order.id }}</p>
-                                <p>支付时间：{{ order.paidAt }}</p>
-                                <p>准备完成时间：{{ order.preparedAt }}</p>
-                                <p>配送时间：{{ order.deliveredAt }}</p>
-                                <p>送达时间：{{ order.finishedAt }}</p>
+                                <p>支付时间：{{ order.payTime }}</p>
+                                <p>配送时间：{{ order.deliveryTime }}</p>
+                                <p>送达时间：{{ order.receiveTime }}</p>
                             </n-collapse-item>
                             <n-collapse-item title="收货信息" name="2">
-                                <p>收货人：{{ order.customer }}</p>
-                                <p>联系电话：{{ order.customerAddress.tel }}</p>
-                                <p>地址：{{ order.customerAddress.address }} {{ order.customerAddress.city }} {{ order.customerAddress.district }}
-                                    {{ order.customerAddress.address }}</p>
+                                <p>收货人：{{ order.address }}</p>
+                                <p>联系电话：{{ order.phone }}</p>
+                                <p>备注：{{ order.remark }}</p>
                             </n-collapse-item>
-
                             <n-collapse-item title="物流信息" name="3">
                                 <p>配送方式：自提</p>
-                                <p>配送员：{{ order.rider }}</p>
-                                <p>配送时间：{{ order.deliveredAt }}</p>
-                                <p>送达时间：{{ order.finishedAt }}</p>
-                                <p>配送位置：{{ order.delivery }}</p>
-                                <p>店铺信息：</p>
-                            </n-collapse-item>
-                            <n-collapse-item title="其它信息" name="4">
-                                <p> 备注： {{ order.note }} </p>
+                                <p>配送员：张三</p>
+                                <p>联系电话：13800138000</p>
+                                <p>配送时间：{{ order.deliveryTime }}</p>
+                                <p>送达时间：{{ order.receiveTime }}</p>
                             </n-collapse-item>
                         </n-collapse>
                     </div>
@@ -83,102 +76,28 @@
 </template>
 
 <script lang="ts" setup>
-import { computed, ref, onMounted } from 'vue'
+import { computed, ref } from 'vue'
 import Recommendation from './Recommendation.vue'
 import { useRoute } from 'vue-router'
-import { type OrderDetail, type RecommendItem, type OrderInfo, Status } from '@/types/order'
-import { fetchOrderDetail } from '@/api/orders'
+import { type OrderDetail, type RecommendItem} from '@/types/order'
 
-
-const order = ref<OrderInfo>({
-    id: "497f6eca-6276-4993-bfeb-53cbbbba6f08",
-    status: Status.Delivering,
-    createdAt: new Date("2019-08-24T14:15:22.123Z"),
-    paidAt: new Date("2019-08-24T14:15:22.123Z"),
-    preparedAt: new Date("2019-08-24T14:15:22.123Z"),
-    deliveredAt: new Date("2019-08-24T14:15:22.123Z"),
-    finishedAt: new Date("2019-08-24T14:15:22.123Z"),
-    canceledAt: new Date("2019-08-24T14:15:22.123Z"),
-    customer: "0ac6320b-fa4d-4235-8d23-413a2b863bad",
-    shop: "06d34de1-b0bd-4e60-bd25-222980128ed1",
-    rider: "a197bfad-7b25-473e-bd10-519eeb8049dd",
-    items: [
-        {
-            id: "497f6eca-6276-4993-bfeb-53cbbbba6f08",
-            name: "string",
-            cover: {
-                origin: "string",
-                thumbnail: "string"
-            },
-            quantity: 0,
-            price: 0,
-        }
-    ],
-    deliveryFee: 0,
-    total: 32,
-    note: "string",
-    delivery: {
-        latitude: 0,
-        longitude: 0
-    },
-    shopAddress: {
-        id: '1',
-        isDefault: true,
-        coordinate: [
-            0
-        ],
-        province: "北京",
-        city: "北京",
-        district: "海淀区",
-        address: "学院路37号北京航空航天大学学生1公寓邮局旁外卖柜",
-        name: "string",
-        tel: "string"
-    },
-    customerAddress: {
-        id: '2',
-        isDefault: false,
-        coordinate: [
-            0
-        ],
-        province: "北京",
-        city: "北京",
-        district: "海淀区",
-        address: "学院路37号北京航空航天大学学生1公寓邮局旁外卖柜",
-        name: "string",
-        tel: "string"
-    }
+const order = ref<OrderDetail>({
+    id: 12345678,
+    storeName: '麦当劳',
+    storeAvatar: 'https://picsum.photos/seed/avatar/60',
+    orderTime: '2025-05-19 13:00',
+    time: '2025-05-19 13:00',
+    total: 28.5,
+    items: [],
+    discount: 3.5,
+    payTime: '2025-05-19 13:05',
+    deliveryTime: '2025-05-19 13:30',
+    receiveTime: '2025-05-19 13:40',
+    status: '已完成',
+    address: '北京市海淀区中关村大街1号',
+    phone: '13800138000',
+    remark: '不要辣'
 })
-const router = useRoute()
-
-// const loadData = async () => {
-//     try {
-//         const orderId = router.params.id as unknown as number
-//         order.value = await fetchOrderDetail(orderId)
-//     } catch (error) {
-//         console.error('Error fetching order data:', error)
-//     }
-// }
-
-// onMounted(() => {
-//     loadData()
-// })
-// const order = ref<OrderDetail>({
-//     id: 12345678,
-//     storeName: '麦当劳',
-//     storeAvatar: 'https://picsum.photos/seed/avatar/60',
-//     orderTime: '2025-05-19 13:00',
-//     time: '2025-05-19 13:00',
-//     total: 28.5,
-//     items: [],
-//     discount: 3.5,
-//     payTime: '2025-05-19 13:05',
-//     deliveryTime: '2025-05-19 13:30',
-//     receiveTime: '2025-05-19 13:40',
-//     status: '已完成',
-//     address: '北京市海淀区中关村大街1号',
-//     phone: '13800138000',
-//     remark: '不要辣'
-// })
 // m模拟数据
 const sampleProduct = ref<RecommendItem[]>([{
     id: 1,
@@ -233,22 +152,8 @@ function handlePageChange(newPage: number) {
 const route = useRoute()
 const orderId = route.params.id || '12345678'
 
-// TODO: 功能按钮
-const evaluate = (order: OrderInfo) => {
-    alert('Not implemented yet')
-}
+// 数据
 
-const buyAgain = (order: OrderInfo) => {
-    alert('Not implemented yet')
-}
-
-const feedback = (order: OrderInfo) => {
-    alert('Not implemented yet')
-}
-
-function fetchOrder(arg0: string): OrderInfo | PromiseLike<OrderInfo | undefined> | undefined {
-    throw new Error('Function not implemented.')
-}
 </script>
 
 <style scoped>
