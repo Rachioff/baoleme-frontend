@@ -295,8 +295,9 @@ import {
   AlipayCircleFilled,
   MailFilled
 } from '@vicons/antd'
-import { type FormInst, type FormRules, useMessage } from 'naive-ui'
-import { registerUser, type RegisterRequest } from '@/api/auth'
+import { type FormInst, type FormRules, useMessage } from 'naive-ui';
+import { registerUser, type RegisterRequest, loginUser, type LoginRequest, type LoginResponse } from '@/api/auth';
+import { useTokenStore } from '@/stores/token';
 
 const router = useRouter()
 const message = useMessage()
@@ -305,6 +306,7 @@ const rememberMe = ref(false)
 const serviceAgreementVisible = ref(false)
 const privacyPolicyVisible = ref(false)
 const registerSuccessVisible = ref(false)
+const tokenStore = useTokenStore();
 
 // 登录表单
 const loginFormRef = ref<FormInst | null>(null)

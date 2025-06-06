@@ -1,48 +1,28 @@
-<template>
-  <n-card :title="cardTitle" style="max-width: 600px; margin: 50px auto; text-align: center;">
-    <n-spin :show="loading">
-      <n-result
-        :status="resultStatus"
-        :title="resultTitle"
-        :description="resultDescription"
-      >
-        <template #footer>
-          <n-button v-if="showLoginButton" type="primary" @click="goToLogin">
-            前往登录
-          </n-button>
-        </template>
-      </n-result>
-    </n-spin>
-  </n-card>
-</template>
-
+// src/views/user/auth/EmailVerification.vue
 <script setup lang="ts">
-import { ref, onMounted, computed } from 'vue'
+import { onMounted, ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
-import { NCard, NSpin, NResult, NButton, useMessage } from 'naive-ui'
-import { verifyRegister } from '@/api/auth'
+import { verifyRegister } from '@/api/auth' // 假设 verifyRegister 接受 token 字符串
+import { useMessage } from 'naive-ui'
 
 const route = useRoute()
 const router = useRouter()
 const message = useMessage()
-
-const loading = ref(true)
-const verificationStatus = ref<'success' | 'error' | 'processing'>('processing')
-const errorMessage = ref<string | null>(null)
-
-const cardTitle = '邮箱验证'
+const verificationStatus = ref('') // e.g., 'verifying', 'success', 'failed'
+const statusMessage = ref('')
 
 onMounted(async () => {
-  const token = route.query.token as string | undefined;
-  console.log(token)
+  const token = route.query.token as string | undefined; // 从查询参数获取token
+
   if (token) {
     verificationStatus.value = 'verifying'
     statusMessage.value = '正在验证您的邮箱...'
     try {
-      await verifyRegister(token)
+      await verifyRegister(token) // 调用API
       verificationStatus.value = 'success'
       statusMessage.value = '邮箱验证成功！您现在可以登录了。'
       message.success(statusMessage.value)
+      // 可选：几秒后跳转到登录页
       setTimeout(() => {
         router.push('/login')
       }, 3000)
@@ -58,35 +38,26 @@ onMounted(async () => {
     message.error(statusMessage.value)
   }
 })
-
-const resultStatus = computed(() => {
-    if (verificationStatus.value === 'success') return 'success'
-    if (verificationStatus.value === 'error') return 'error'
-    return undefined 
-})
-
-const resultTitle = computed(() => {
-    if (verificationStatus.value === 'success') return '验证成功！🎉'
-    if (verificationStatus.value === 'error') return '验证失败 😟'
-    return '正在验证您的邮箱...'
-})
-
-const resultDescription = computed(() => {
-    if (verificationStatus.value === 'success') return '您的邮箱已成功验证。现在您可以登录到您的账户。'
-    if (verificationStatus.value === 'error') return errorMessage.value || '抱歉，我们无法验证您的邮箱。请检查链接是否正确，或尝试重新注册。'
-    return '请稍候，我们正在处理您的请求。'
-})
-
-const showLoginButton = computed(() => verificationStatus.value === 'success')
-
-// 注册成功之后可以点那个按钮返回登录
-const goToLogin = () => {
-    router.push({ name: 'Login' })
-}
 </script>
 
+<template>
+  <div class="email-verification-container">
+    <h2>邮箱验证</h2>
+    <p v-if="verificationStatus === 'verifying'">{{ statusMessage }}</p>
+    <div v-if="verificationStatus === 'success'">
+      <p style="color: green;">{{ statusMessage }}</p>
+      <router-link to="/login">前往登录</router-link>
+    </div>
+    <div v-if="verificationStatus === 'failed'">
+      <p style="color: red;">{{ statusMessage }}</p>
+      <router-link to="/login">返回登录页</router-link>
+    </div>
+  </div>
+</template>
+
 <style scoped>
-.n-card {
-    box-shadow: 0 2px 12px 0 rgba(0,0,0,0.1);
+.email-verification-container {
+  text-align: center;
+  padding: 40px;
 }
 </style>
