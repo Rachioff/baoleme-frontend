@@ -26,5 +26,9 @@ coverage
 *.njsproj
 *.sln
 *.sw?
+.env
 
 *.tsbuildinfo
+
+/src/views/test
+/src/views/result

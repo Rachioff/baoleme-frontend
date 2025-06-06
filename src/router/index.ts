@@ -1,7 +1,7 @@
 // src/router/index.ts
 import { createRouter, createWebHistory } from 'vue-router'
 import type { RouteRecordRaw } from 'vue-router'
-import Login from '@/views/user/auth/Login.vue'
+import Login from '@/views/customer/auth/Login.vue'
 import { defineAsyncComponent } from 'vue'
 
 const routes: Array<RouteRecordRaw> = [
@@ -14,43 +14,14 @@ const routes: Array<RouteRecordRaw> = [
   {
     path: '/login',
     name: 'Login',
-    component: () => import('@/views/user/auth/Login.vue')
+    component: () => import('@/views/customer/auth/Login.vue')
   },
 
   // 忘记密码
   {
     path: '/forgot-password',
     name: 'ForgotPassword',
-    component: () => import('@/views/user/auth/ForgotPassword.vue')
-  },
-  // 修改密码验证
-  {
-    path: '/email-postprocess/reset-password',
-    name: 'ResetPasswordEmail',
-    component: () => import('@/views/user/auth/ResetPasswordEmail.vue'),
-    props: route=> ({ query: route.query})
-  },
-
-  // 注册验证
-  {
-    path: '/email-postprocess/verify-register',
-    name: 'EmailVerification',
-    component: () => import('@/views/user/auth/EmailVerification.vue'),
-    props: route => ({ query: route.query })
-  },
-  // 更新邮箱
-  {
-    path: '/user/update-email',
-    name: 'UpdateEmail',
-    component: () => import('@/views/user/auth/UpdateEmail.vue'),
-    meta: { requiresAuth: true },
-  },
-  // 更新邮箱验证
-  {
-    path: '/email-postprocess/verify-email',
-    name: 'VerifyUpdateEmail',
-    component: () => import('@/views/user/auth/EmailVerification.vue'),
-    props: true
+    component: () => import('@/views/customer/auth/ForgotPassword.vue')
   },
 
   // 用户主页面
@@ -84,7 +55,31 @@ const routes: Array<RouteRecordRaw> = [
     component: () => import('@/views/merchant/ShopList.vue'),
   },
   {
-    path: '/merchant/shops/create', // 创建店铺的路由
+    path: '/:catchAll(.*)*',
+    name: 'NotFound',
+    component: () => import('@/views/result/404.vue')
+  },
+  {
+    path: '/user/:userId',
+    name: 'UserProfile',
+    component: () => import('@/views/user/UserView.vue'),
+    props: true
+  },
+  {
+    path: '/customer/order/submit',
+    name: 'OrderSubmit',
+    component: () => import('@/views/customer/order/OrderSubmit.vue')
+  },
+  {
+    path: '/order/getsubmit',
+    name: 'GetOrderSubmit',
+    component: () => import('@/views/customer/order/GetOrder.vue')
+  }, {
+    path: '/rider/order/:id',
+    name: 'OrderForRider',
+    component: () => import('@/views/customer/order/OrderInfoForRider.vue')
+  }, {
+    path: '/merchant/shops/create', // 新增：创建店铺的路由
     name: 'MerchantShopCreate',
     component: () => import('@/views/merchant/ShopCreateForm.vue'),
   },
@@ -142,12 +137,14 @@ const routes: Array<RouteRecordRaw> = [
     component: () => import('@/views/customer/order/Checkout.vue'),
     meta: { requiresAuth: true }
   },
+
   {
     path: '/rider/recommend',
     name: 'Recommend',
     component: () => import('@/views/rider/Recommend.vue'),
     meta: { requiresAuth: true }
   },
+
 ]
 
 const router = createRouter({
