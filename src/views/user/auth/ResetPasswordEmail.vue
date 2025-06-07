@@ -108,13 +108,12 @@
   });
   
   onMounted(() => {
-    const routeToken = route.params.token;
+    const routeToken = route.query.token;
     if (typeof routeToken === 'string' && routeToken) {
       token.value = routeToken;
-      tokenValid.value = true; // 假设 token 存在即有效，后端API会做最终验证
+      tokenValid.value = true;
     } else {
       tokenValid.value = false;
-      // message.error('无效的重置链接或令牌缺失。'); // 提示已在模板中处理
     }
   });
   
