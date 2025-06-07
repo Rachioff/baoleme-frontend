@@ -180,6 +180,23 @@ const routes: Array<RouteRecordRaw> = [
     props: true // 自动将路由参数 (shopId) 作为 props 传递给组件
   },
 
+  {
+  path: '/address/add',
+  name: 'AddressAdd',
+  component: () => import('@/views/AddressSelector.vue'),
+  meta: {
+    requiresAuth: true
+  }
+  },
+  {
+    path: '/address/new',
+    name: 'AddressNew',
+    component: () => import('@/views/customer/address/AddressForm.vue'),
+    meta: {
+      requiresAuth: true
+    }
+  },
+
   // 管理员首页
   {
     path: '/admin',
