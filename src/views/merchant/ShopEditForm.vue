@@ -174,6 +174,7 @@
 
       </n-form>
     </n-card>
+    <n-empty v-else description="无法加载店铺信息进行编辑" style="margin-top: 40px;" />
     <n-modal v-model:show="showAddressSelector" preset="dialog" title="选择地址" style="width: 600px; max-width: 90vw;">
       <AddressSelector
         :latitude="formData?.address.coordinate[1] ?? 0"
@@ -182,7 +183,6 @@
         @close="showAddressSelector = false"
       />
     </n-modal>
-    <n-empty v-else description="无法加载店铺信息进行编辑" style="margin-top: 40px;" />
   </div>
 </template>
 
@@ -443,7 +443,10 @@ const handleSave = (e: MouseEvent) => {
                         ]
                     };
                     const profile = {
-                        ...formData.value,
+                        name: formData.value.name,
+                        description: formData.value.description,
+                        opened: formData.value.opened,
+                        verified: formData.value.verified,
                         openTimeStart: formData.value.openTimeStart ?? 0,
                         openTimeEnd: formData.value.openTimeEnd ?? 0,
                         deliveryPrice: deliveryPriceFen,
