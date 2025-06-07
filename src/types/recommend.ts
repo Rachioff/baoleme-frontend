@@ -1,154 +1,145 @@
-import type { imgURL } from "@/types/img";
-import type { Address } from "./address";
-
-export interface Response {
+/**
+ * 图像链接
+ */
+export interface ImageUrl {
     /**
-     * 店铺Address
+     * 原始图像的 URL
      */
-    address: Address;
+    origin: string;
     /**
-     * 人均价格，分
+     * 缩略图的 URL
      */
-    averagePrice: number;
-    /**
-     * 店铺类型 ID 列表
-     */
-    categories: string[];
-    /**
-     * 封面
-     */
-    cover: imgURL;
-    /**
-     * 店铺创建时间
-     */
-    createdAt: Date;
-    /**
-     * 配送费用，分
-     */
-    deliveryPrice: number;
-    /**
-     * 起送价格，分
-     */
-    deliveryThreshold: number;
-    /**
-     * 店铺描述
-     */
-    description: string;
-    /**
-     * 详情图像
-     */
-    detailImage: imgURL;
-    /**
-     * 距离，公里
-     */
-    distance: number;
-    /**
-     * 店铺 ID
-     */
-    id: string;
-    /**
-     * 店铺执照
-     */
-    license: imgURL;
-    /**
-     * 最远允许配送的距离，公里
-     */
-    maximumDistance: number;
-    /**
-     * 店铺名称
-     */
-    name: string;
-    /**
-     * 开业状态，此属性可用于临时下架店铺
-     */
-    opened: boolean;
-    /**
-     * 营业结束时间（UTC），一天内的分钟数
-     */
-    openTimeEnd: number;
-    /**
-     * 营业开始时间（UTC），一天内的分钟数
-     */
-    openTimeStart: number;
-    /**
-     * 店铺所有者用户 ID
-     */
-    owner: string;
-    /**
-     * 评分，0~50
-     */
-    rating: number;
-    /**
-     * 推荐商品
-     */
-    recommends: Recommend[];
-    /**
-     * 月销量
-     */
-    sale: number;
-    /**
-     * 时间，分钟
-     */
-    time: number;
-    /**
-     * 认证状态，此属性只有管理员可以修改
-     */
-    verified: boolean;
-    [property: string]: any;
+    thumbnail: string;
 }
 
-export interface Recommend {
+/**
+ * 地址信息
+ */
+export interface AddressInfo {
     /**
-     * 商品是否上架
+     * 详细地址
      */
-    available: boolean;
+    address: string;
     /**
-     * 商品类别 ID
+     * 地级行政区名
      */
-    categories: string[];
+    city: string;
     /**
-     * 商品封面图
+     * 经纬度坐标
      */
-    cover: imgURL;
+    coordinate: number[];
     /**
-     * 商品创建时间
+     * 县级行政区名
      */
-    createdAt: Date;
+    district: string;
     /**
-     * 商品描述
-     */
-    description: string;
-    /**
-     * 商品 ID
-     */
-    id: string;
-    /**
-     * 商品名称
+     * 联系人姓名
      */
     name: string;
     /**
-     * 商品实际价格，分
+     * 省级行政区名
      */
+    province: string;
+    /**
+     * 联系人电话
+     */
+    tel: string;
+}
+
+/**
+ * 店铺推荐的商品信息
+ */
+export interface RecommendedItem {
+    available: boolean;
+    categories: string[];
+    cover: ImageUrl;
+    createdAt: Date;
+    description: string;
+    id: string;
+    name: string;
     price: number;
-    /**
-     * 商品无优惠价格（划线价），分
-     */
     priceWithoutPromotion: number;
-    /**
-     * 评分，0~50
-     */
     rating: number;
-    /**
-     * 月销量
-     */
     sale: number;
-    /**
-     * 商品所属店铺 ID
-     */
     shopId: string;
-    /**
-     * 商品是否缺货
-     */
     stockout: boolean;
-    [property: string]: any;
+}
+
+/**
+ * GET /recommended/shops 的响应体中的店铺信息
+ */
+export interface RecommendedShop {
+    address: AddressInfo;
+    averagePrice: number;
+    categories: string[];
+    cover: ImageUrl;
+    createdAt: Date;
+    deliveryPrice: number;
+    deliveryThreshold: number;
+    description: string;
+    detailImage: ImageUrl;
+    distance: number;
+    id: string;
+    license: ImageUrl;
+    maximumDistance: number;
+    name: string;
+    opened: boolean;
+    openTimeEnd: number;
+    openTimeStart: number;
+    owner: string;
+    rating: number;
+    recommends: RecommendedItem[];
+    sale: number;
+    time: number;
+    verified: boolean;
+}
+
+/**
+ * GET /recommended/shops 的 Query 参数
+ */
+export interface GetRecommendedShopsRequest {
+    a?: string;
+    c?: string[];
+    d?: number;
+    p?: number;
+    pn?: number;
+    q?: string;
+    r?: number;
+    rc?: number;
+    s?: 'c' | 'r' | 't';
+    t?: number;
+}
+
+/**
+ * GET /recommended/items 的响应体
+ */
+export interface RecommendedProduct {
+    available: boolean;
+    categories: string[];
+    cover: ImageUrl;
+    createdAt: Date;
+    description: string;
+    id: string;
+    name: string;
+    price: number;
+    priceWithoutPromotion: number;
+    rating: number;
+    sale: number;
+    shopId: string;
+    stockout: boolean;
+}
+
+/**
+ * GET /recommended/items 的 Query 参数
+ */
+export interface GetRecommendedItemsRequest {
+    a?: string;
+    c?: string[];
+    max_p?: number;
+    min_p?: number;
+    p?: number;
+    pn?: number;
+    q?: string;
+    r?: number;
+    s?: string;
 }
