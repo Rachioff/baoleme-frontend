@@ -271,6 +271,19 @@ const routes: Array<RouteRecordRaw> = [
     name: 'DeliveryMap',
     component: () => import('@/views/DeliveryMap.vue')
   },
+  // 新增：历史记录
+  {
+    path: '/customer/records',
+    name: 'CustomerRecords',
+    component: () => import('@/views/customer/RecordsView.vue'),
+    meta: { requiresAuth: true, role: 'customer' }
+  },
+  {
+    path: '/customer/favorites',
+    name: 'CustomerFavorites',
+    component: () => import('@/views/customer/FavoritesView.vue'),
+    meta: { requiresAuth: true, role: 'customer' }
+  },
 ]
 
 const router = createRouter({
