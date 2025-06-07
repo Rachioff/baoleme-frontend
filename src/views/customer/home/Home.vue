@@ -12,9 +12,18 @@
           <n-icon size="12"><down-outlined /></n-icon>
         </div>
       </n-space>
-      <div class="search-input" @click="router.push('/search')">
+      <div class="search-input-wrapper" @click="router.push('/customer/search')">
         <n-icon size="16"><search-outlined /></n-icon>
-        <span>搜索商家、美食</span>
+        <n-input
+          placeholder="搜索商家、美食"
+          readonly
+        />
+        <n-button
+          class="search-button"
+          @click.stop="router.push('/customer/search')"
+        >
+          搜索
+        </n-button>
       </div>
     </div>
 
@@ -59,12 +68,6 @@
     <!-- 热门商家 -->
     <div class="section-title">
       <span>热门商家</span>
-      <n-button text size="small" @click="router.push('/stores')">
-        查看全部
-        <template #icon>
-          <n-icon><right-outlined /></n-icon>
-        </template>
-      </n-button>
     </div>
 
     <div class="store-list">
@@ -393,21 +396,28 @@ onMounted(() => {
   cursor: pointer;
 }
 
-.search-input {
+.search-input-wrapper {
   flex: 1;
-  margin-left: 10px;
   display: flex;
   align-items: center;
-  background-color: #f5f5f5;
-  border-radius: 16px;
-  padding: 8px 12px;
+  background-color: #fff;
+  border-radius: 8px;
+  padding: 0 12px;
+  margin-left: 10px;
+}
+.search-input-wrapper .n-icon {
   color: #999;
-  cursor: pointer;
+  margin-right: 8px;
 }
 
-.search-input span {
-  margin-left: 6px;
-  font-size: 14px;
+.search-button {
+  margin-left: 12px;
+  background-color: #ff6b01;
+  color: #fff;
+  border: none;
+  border-radius: 4px;
+  padding: 0 16px;
+  height: 32px;
 }
 
 /* 轮播图样式 */
