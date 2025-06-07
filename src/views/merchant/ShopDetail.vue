@@ -18,10 +18,16 @@
             <n-tab-pane name="overview" tab="店铺概览">
             </n-tab-pane>
             <n-tab-pane name="products" tab="商品管理">
-            <n-text>商品管理功能开发中...</n-text>
+            <ProductList :shop-id="shop?.id" v-if="shop" />
+            </n-tab-pane>
+            <n-tab-pane name="categories" tab="分类管理">
+            <ShopItemCategoryView v-if="shop" :key="shop.id" />
             </n-tab-pane>
             <n-tab-pane name="orders" tab="订单处理">
             <n-text>订单处理功能开发中...</n-text>
+            </n-tab-pane>
+            <n-tab-pane name="statistics" tab="数据统计">
+              <ShopStatistics v-if="shop" :shop-id="shop.id" />
             </n-tab-pane>
             </n-tabs>
         </template>
@@ -138,6 +144,9 @@ import {
 } from '@vicons/ionicons5'
 import { getShopInfo, getShopCategories } from '@/api/shop'
 import AMapLoader from '@amap/amap-jsapi-loader';
+import ProductList from './product/ProductList.vue';
+import ShopItemCategoryView from './ShopItemCategoryView.vue';
+import ShopStatistics from './shop/ShopStatistics.vue';
 
 // --- 复用 ShopEditForm.vue 中的数据模型定义 ---
 interface 地址 {
@@ -180,6 +189,30 @@ const shopId = computed(() => route.params.shopId as string)
 const shop = ref<店铺资料 | null>(null) // 使用更新后的接口
 const isLoading = ref(true)
 const currentTab = ref('overview')
+const validTabs = ['overview', 'products', 'categories', 'orders', 'statistics']
+
+// 初始化时根据 hash 设置 tab
+onMounted(() => {
+  const hash = window.location.hash.replace('#', '')
+  if (hash && validTabs.includes(hash)) {
+    currentTab.value = hash
+  }
+})
+
+watch(currentTab, (tab) => {
+  if (tab) {
+    window.location.hash = tab
+  }
+})
+
+// 监听浏览器后退/前进，切换 tab
+window.addEventListener('hashchange', () => {
+  const hash = window.location.hash.replace('#', '')
+  if (hash && validTabs.includes(hash)) {
+    currentTab.value = hash
+  }
+})
+
 const categoryMap = ref<Record<string, string>>({});
 
 // const mockShopDatabaseFromEdit: Record<string, 店铺资料> = { // 类型改为 店铺资料
