@@ -8,7 +8,7 @@ import { useMessage } from 'naive-ui'
 const route = useRoute()
 const router = useRouter()
 const message = useMessage()
-const verificationStatus = ref('') // e.g., 'verifying', 'success', 'failed'
+const verificationStatus = ref('')
 const statusMessage = ref('')
 
 onMounted(async () => {

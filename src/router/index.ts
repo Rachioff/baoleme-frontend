@@ -1,7 +1,7 @@
 // src/router/index.ts
 import { createRouter, createWebHistory } from 'vue-router'
 import type { RouteRecordRaw } from 'vue-router'
-import Login from '@/views/customer/auth/Login.vue'
+import Login from '@/views/user/auth/Login.vue'
 import { defineAsyncComponent } from 'vue'
 
 const routes: Array<RouteRecordRaw> = [
@@ -14,7 +14,7 @@ const routes: Array<RouteRecordRaw> = [
   {
     path: '/login',
     name: 'Login',
-    component: () => import('@/views/customer/auth/Login.vue')
+    component: () => import('@/views/user/auth/Login.vue')
   },
 
   // 忘记密码
@@ -42,7 +42,6 @@ const routes: Array<RouteRecordRaw> = [
   {
     path: '/customer/home',
     name: 'CustomerHome',
-    // 使用懒加载
     component: () => import('@/views/customer/home/Home.vue')
   },
   {
