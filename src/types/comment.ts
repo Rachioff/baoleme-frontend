@@ -1,10 +1,10 @@
-import type { UserConmment } from '@/types/user'
+import type { UserComment } from '@/types/user'
 
 export interface Comment  {
   id: string
   order: string
   rating: number 
   content: string
-  user: UserConmment
+  user: UserComment
   createdAt: string
 }

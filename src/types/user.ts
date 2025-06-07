@@ -23,7 +23,7 @@ export interface UserData extends UserInfo, UserProfile {
     }
 }
 
-export interface UserConmment {
+export interface UserComment {
     id: string
     name: string
     avatar: {

@@ -1,7 +1,7 @@
 // src/router/index.ts
 import { createRouter, createWebHistory } from 'vue-router'
 import type { RouteRecordRaw } from 'vue-router'
-import Login from '@/views/customer/auth/Login.vue'
+import Login from '@/views/user/auth/Login.vue'
 import { defineAsyncComponent } from 'vue'
 
 const routes: Array<RouteRecordRaw> = [
@@ -14,7 +14,7 @@ const routes: Array<RouteRecordRaw> = [
   {
     path: '/login',
     name: 'Login',
-    component: () => import('@/views/customer/auth/Login.vue')
+    component: () => import('@/views/user/auth/Login.vue')
   },
 
   // 忘记密码
@@ -42,7 +42,6 @@ const routes: Array<RouteRecordRaw> = [
   {
     path: '/customer/home',
     name: 'CustomerHome',
-    // 使用懒加载
     component: () => import('@/views/customer/home/Home.vue')
   },
   {
@@ -167,7 +166,19 @@ const routes: Array<RouteRecordRaw> = [
 
     meta: { requiresAuth: true }
   },
-
+  // 顾客店铺列表页
+  {
+    path: '/customer/shops',
+    name: 'CustomerShopList',
+    component: () => import('@/views/customer/shop/ShopListView.vue'),
+    props: route => ({ query: route.query })
+  },
+  {
+    path: '/customer/shops/:shopId', // 使用 :shopId 动态匹配店铺ID
+    name: 'CustomerShopProducts',
+    component: () => import('@/views/customer/shop/ShopProductsView.vue'),
+    props: true // 自动将路由参数 (shopId) 作为 props 传递给组件
+  },
 ]
 
 const router = createRouter({
