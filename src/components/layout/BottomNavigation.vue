@@ -47,9 +47,9 @@ const navItems = ref([
     label: '我的',
     icon: UserOutlined,
     path: [
-      `/user/${useTokenStore().$id}`,
-      `/user/${useTokenStore().$id}`,
-      `/user/${useTokenStore().$id}`
+      `/user/${useTokenStore().userId}`,
+      `/user/${useTokenStore().userId}`,
+      `/user/${useTokenStore().userId}`
     ]
   }
 ]);
