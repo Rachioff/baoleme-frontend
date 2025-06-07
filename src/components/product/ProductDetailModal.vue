@@ -9,7 +9,7 @@
     <div v-if="isLoading" class="loading-container">
       <n-spin size="large" />
     </div>
-    <div v-else-if="productDetail" class="detail-container">
+    <div v-else-if="productDetail && productDetail.cover" class="detail-container">
       <n-image
         :src="productDetail.cover.origin"
         class="detail-image"
@@ -71,11 +71,17 @@ watch(() => props.show, async (isShown) => {
     isLoading.value = true;
     productDetail.value = null;
     try {
-      productDetail.value = await getProductDetail(props.productId); 
+      const data = await getProductDetail(props.productId);
+      
+      if (props.show) {
+        productDetail.value = data;
+      }
     } catch (error) {
       console.error('获取商品详情失败:', error);
     } finally {
-      isLoading.value = false;
+      if (props.show) {
+        isLoading.value = false;
+      }
     }
   }
 });

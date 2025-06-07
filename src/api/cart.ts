@@ -1,11 +1,18 @@
-// src/api/cart.ts
-
 import { apiRoot } from '@/config/api';
 import { useTokenStore } from '@/stores/token';
 import axios from 'axios';
 import type { CartInfo, CartItem, UpdateCartQuantityResponse } from '@/types/cart';
 
 const getToken = () => useTokenStore().token;
+
+export const getCart = async (shopId: string) => {
+    const res = await axios.get(`${apiRoot}/cart/${shopId}`, {
+        headers: { 
+            Authorization: `Bearer ${useTokenStore().token}`
+        }
+    })
+    return res.data as CartInfo 
+}
 
 /**
  * 获取购物车信息
