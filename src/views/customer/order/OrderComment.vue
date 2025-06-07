@@ -69,7 +69,7 @@ const orderId = route.params.id as string
 
 
 const shopInfo = ref({
-  name: '',
+  name: '未知店铺',
   id: '',
   owner: '',
   createdAt: '',

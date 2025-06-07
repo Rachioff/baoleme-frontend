@@ -4,9 +4,12 @@
       <div class="tab-wrapper">
         <n-tabs type="line" v-model:value="currentTab" animated class="custom-tabs">
           <n-tab-pane name="all" tab="全部" />
-          <n-tab-pane name="pending" tab="待评价" />
-          <n-tab-pane name="category" tab="分类" />
-          <n-tab-pane name="history" tab="历史" />
+          <n-tab-pane name="unpaid" tab="待支付" />
+          <n-tab-pane name="preparing" tab="制作中" />
+          <n-tab-pane name="prepared" tab="待取餐" />
+          <n-tab-pane name="delivering" tab="配送中" />
+          <n-tab-pane name="finished" tab="已完成" />
+          <n-tab-pane name="cancelled" tab="已取消" />
         </n-tabs>
       </div>
       <!-- 搜索框 -->
@@ -18,12 +21,13 @@
 
     <div class="order-list mt-4">
       <!-- 订单卡片 -->
-       <n-space vertical :size="12" class="mt-4">
-          <OrderCard v-for="order in filteredOrders" :key="order.id" :order="order" />
-        </n-space>
+      <n-space vertical :size="12" class="mt-4">
+        <OrderCard v-for="order in filteredOrders" :key="order.id" :order="order" />
+      </n-space>
       <infinite-scroll-list :items="orders" :load-more="loadMoreOrders" :is-loading="isLoading" :has-more="hasMore"
         item-key="id" class="order-scroll-list">
       </infinite-scroll-list>
+      <n-skeleton height="40px"  :sharp="false" />
 
     </div>
     <p v-if="isTimeOut" class="no-orders" style="justify-self: center;">加载超时，重试</p>
@@ -47,9 +51,9 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, watch, onMounted } from 'vue'
+import { ref, computed } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
-import { NTabs, NTabPane, NSpace, useMessage } from 'naive-ui'
+import { NTabs, NTabPane, NSpace, useMessage, NBackTop } from 'naive-ui'
 import OrderCard from '@/components/card/OrderCard.vue'
 import { SearchOutlined } from '@vicons/antd'
 import { Status, type Order } from '@/types/order' // 导入数据类型
@@ -86,7 +90,6 @@ const isTimeOut = ref(false)
 //       case "merchant":
 //         orders.value = await fetchShopOrderList(page.value, pageSize, status.value as string, useTokenStore().userId as string)
 //         break;
-//       // 不知何用
 //       // case "admin":
 //       //   orders.value = await fetchOrders(page.value, pageSize, status.value as string)
 //       case "rider":
@@ -110,108 +113,7 @@ const isTimeOut = ref(false)
 //   }, 5000)
 // })
 // TODO :模拟订单数据
-// const orders = ref([
-//   {
-//     id: 1,
-//     storeName: '沙县小吃',
-//     status: '已完成',
-//     time: '2025-05-17 11:23',
-//     items: ['米线', '蛋炒饭'],
-//     total: 29,
-//     storeAvatar: 'https://picsum.photos/seed/1/200/200',
-//     orderTime: '2025-05-17 11:23',
-//   },
-//   {
-//     id: 2,
-//     storeName: '麦当劳',
-//     status: '待评价',
-//     time: '2025-05-18 14:45',
-//     items: ['汉堡', '可乐'],
-//     total: 36,
-//     storeAvatar: 'https://picsum.photos/seed/2/200/200',
-//     orderTime: '2025-05-18 14:45'
-//   },
-//   {
-//     id: 3,
-//     storeName: '黄焖鸡米饭',
-//     status: '已完成',
-//     time: '2025-05-16 18:10',
-//     items: ['黄焖鸡', '米饭'],
-//     total: 32,
-//     storeAvatar: 'https://picsum.photos/seed/3/200/200',
-//     orderTime: '2025-05-16 18:10'
-//   },
-//   {
-//     id: 4,
-//     storeName: '兰州拉面',
-//     status: '已完成',
-//     time: '2025-05-15 20:00',
-//     items: ['拉面', '卤蛋'],
-//     total: 28,
-//     storeAvatar: 'https://picsum.photos/seed/4/200/200',
-//     orderTime: '2025-05-15 20:00'
-//   },
-//   {
-//     id: 5,
-//     storeName: '肯德基',
-//     status: '待评价',
-//     time: '2025-05-19 12:15',
-//     items: ['炸鸡', '雪碧'],
-//     total: 38,
-//     storeAvatar: 'https://picsum.photos/seed/5/200/200',
-//     orderTime: '2025-05-19 12:15'
-//   },
-//   {
-//     id: 6,
-//     storeName: '麦当劳',
-//     status: '已完成',
-//     time: '2025-05-14 09:50',
-//     items: ['汉堡', '可乐'],
-//     total: 34,
-//     storeAvatar: 'https://picsum.photos/seed/6/200/200',
-//     orderTime: '2025-05-14 09:50'
-//   },
-//   {
-//     id: 7,
-//     storeName: '沙县小吃',
-//     status: '待评价',
-//     time: '2025-05-13 13:33',
-//     items: ['米线', '蛋炒饭'],
-//     total: 26,
-//     storeAvatar: 'https://picsum.photos/seed/7/200/200',
-//     orderTime: '2025-05-13 13:33'
-//   },
-//   {
-//     id: 8,
-//     storeName: '兰州拉面',
-//     status: '已完成',
-//     time: '2025-05-12 10:25',
-//     items: ['拉面', '卤蛋'],
-//     total: 30,
-//     storeAvatar: 'https://picsum.photos/seed/8/200/200',
-//     orderTime: '2025-05-12 10:25'
-//   },
-//   {
-//     id: 9,
-//     storeName: '肯德基',
-//     status: '已完成',
-//     time: '2025-05-11 15:40',
-//     items: ['炸鸡', '雪碧'],
-//     total: 35,
-//     storeAvatar: 'https://picsum.photos/seed/9/200/200',
-//     orderTime: '2025-05-11 15:40'
-//   },
-//   {
-//     id: 10,
-//     storeName: '黄焖鸡米饭',
-//     status: '待评价',
-//     time: '2025-05-10 17:55',
-//     items: ['黄焖鸡', '米饭'],
-//     total: 31,
-//     storeAvatar: 'https://picsum.photos/seed/10/200/200',
-//     orderTime: '2025-05-10 17:55'
-//   }
-// ])
+
 const orders = ref<Order[]>([])
 
 // 模拟 API 请求获取店铺数据，后续可删
@@ -231,11 +133,12 @@ const fetchMockOrders = (page: number, limit: number): Promise<Order[]> => {
       for (let i = 0; i < limit; i++) {
         const currentIndex = startIndex + i
         if (currentIndex >= totalMockItems) break
+        let nowStatus =  currentIndex % 2 === 0 ? Status.Finished : Status.Delivering
 
         const orderId = `order-${currentIndex + 1}`
         newOrders.push({
           id: "497f6eca-6276-4993-bfeb-53cbbbba6f08",
-          status: Status.Delivering,
+          status: nowStatus,
           createdAt: new Date("2019-08-24T14:15:22.123Z"),
           paidAt: new Date("2019-08-24T14:15:22.123Z"),
           preparedAt: new Date("2019-08-24T14:15:22.123Z"),
@@ -248,14 +151,24 @@ const fetchMockOrders = (page: number, limit: number): Promise<Order[]> => {
           items: [
             {
               id: "497f6eca-6276-4993-bfeb-53cbbbba6f08",
-              name: "string",
+              name: "string0",
               cover: {
                 origin: "string",
                 thumbnail: "string"
               },
               quantity: 0,
               price: 0,
-            }
+            },
+            {
+              id: "497f6eca-6276-4993-bfeb-53cbbbba6f08",
+              name: "string1",
+              cover: {
+                origin: "string",
+                thumbnail: "string"
+              },
+              quantity: 0,
+              price: 0,
+            },
           ],
           deliveryFee: 0,
           total: 32,
@@ -325,10 +238,22 @@ const filteredOrders = computed(() => {
     console.log("filtered")
     return orders.value
   }
-  if (currentTab.value === 'pending') {
+  if (currentTab.value === 'unpaid') {
+    return orders.value.filter(order => order.status === Status.Unpaid)
+  }
+  if (currentTab.value === 'preparing') {
+    return orders.value.filter(order => order.status === Status.Preparing)
+  }
+  if (currentTab.value === 'prepared') {
     return orders.value.filter(order => order.status === Status.Prepared)
   }
+  if (currentTab.value === 'delivering') {
+    return orders.value.filter(order => order.status === Status.Delivering)
+  }
   if (currentTab.value === 'history') {
+    return orders.value.filter(order => order.status === Status.Finished)
+  }
+  if (currentTab.value === 'canceled') {
     return orders.value.filter(order => order.status === Status.Canceled)
   }
   if (currentTab.value === 'category') {
