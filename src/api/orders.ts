@@ -2,7 +2,7 @@ import axios from 'axios'
 import { ref, onMounted } from 'vue'
 import { apiRoot } from '@/config/api'
 import { useTokenStore } from '@/stores/token'
-import type { createOrderreturn,Status, ItemInfo, OrderInfo,OrderInfoForShopAndrider, OrderList } from '@/types/order'
+import type { createOrderreturn,Status, ItemInfo, Order,OrderInfoForShopAndrider } from '@/types/order'
 
 export async function fetch
 (page: number, pageSize: number, s: string) {
@@ -15,7 +15,7 @@ export async function fetch
     headers: {Authorization: `Bearer ${useTokenStore().token}`}
   })
 
-  return res.data as OrderList[]
+  return res.data as Order[]
 }
 
 export async function fetchOrderDetail(orderId: string) {
@@ -23,7 +23,7 @@ export async function fetchOrderDetail(orderId: string) {
     headers: {Authorization: `Bearer ${useTokenStore().token}`}
   })
 
-  return res.data as OrderInfo
+  return res.data as Order
 }
 
 export async function fetchCustomerOrderList(page: number, pageSize: number, s: string) {
@@ -36,7 +36,7 @@ export async function fetchCustomerOrderList(page: number, pageSize: number, s: 
     headers: {Authorization: `Bearer ${useTokenStore().token}`}
   })
 
-  return res.data as OrderList[]
+  return res.data as Order[]
 }
 
 export async function fetchShopOrderList(page: number, pageSize: number, s: string, id: string) {
@@ -49,7 +49,7 @@ export async function fetchShopOrderList(page: number, pageSize: number, s: stri
     headers: {Authorization: `Bearer ${useTokenStore().token}`}
   })
 
-  return res.data as OrderList[]
+  return res.data as Order[]
 }
 
 export async function fetchRiderOrderList(page: number, pageSize: number, s: string) {
@@ -62,7 +62,7 @@ export async function fetchRiderOrderList(page: number, pageSize: number, s: str
     headers: {Authorization: `Bearer ${useTokenStore().token}`}
   })
 
-  return res.data as OrderList[]
+  return res.data as Order[]
 }
 
 export async function postOrder(shopId: string, addressId: string, note: string) {
@@ -75,14 +75,14 @@ export async function postOrder(shopId: string, addressId: string, note: string)
     headers: {Authorization: `Bearer ${useTokenStore().token}`
     }
   })
-  return res.data as OrderList[]
+  return res.data as Order[]
 }
 
 export async function getOrder(orderId: number) {
   const res = await axios.patch(`${apiRoot}/orders/${orderId}/rider`, {
     headers: {Authorization: `Bearer ${useTokenStore().token}`}
   })
-  return res.data as OrderInfo
+  return res.data as Order
 }
 
 export async function patchOrderStatus(id: string, status: string) {
@@ -93,7 +93,7 @@ export async function patchOrderStatus(id: string, status: string) {
     headers: {Authorization: `Bearer ${useTokenStore().token}`}
   })
 
-  return res.data as OrderInfo
+  return res.data as Order
 }
 
 export async function deleteCanceledOrder(id: string) {

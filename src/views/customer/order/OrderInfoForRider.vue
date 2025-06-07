@@ -15,12 +15,12 @@
                 <div class="detail">
                     <div><n-icon>
                             <Location />
-                        </n-icon> {{ order.address }} <span class="distance">距离{{ order.distance }}km</span></div>
+                        </n-icon> {{ order.customerAddress }} <span class="distance">距离{{ "未实现" }}km</span></div>
                     <div><n-icon>
                             <ClockCircle />
                         </n-icon> 下单时间：{{ order.createdAt }}</div>
                     <div>联系方式：{{ order.customer }}</div>
-                    <div>送餐内容：{{order.items?.map(item => item.name).join('、')}}</div>
+                    <div>送餐内容：{{order.items!.map(item => item.name).join('、')}}</div>
                     <div>预计送达时间：{{ order.deliveredAt }}</div>
                     <div>备注：{{ order.note }}</div>
                     <div class="timeout">已超时：<span class="overtime">{{ countdown }}</span></div>
@@ -58,12 +58,12 @@ import { ShopFilled, MessageFilled } from '@vicons/antd'
 // import AmapMap from './AmapMap.vue'
 import { fetchOrderDetail } from '@/api/orders'
 import { useRoute } from 'vue-router'
-import { Status, type OrderInfo } from '@/types/order'
+import { Status, type Order } from '@/types/order'
 import { forEachChild } from 'typescript'
 // import { useWebSocket } from '@/utils/websocket'
 
 const message = useMessage()
-const order = ref<OrderInfo>({
+const order = ref<Order>({
     id: "497f6eca-6276-4993-bfeb-53cbbbba6f08",
     status: Status.Delivering,
     createdAt: new Date("2019-08-24T14:15:22.123Z"),
