@@ -76,12 +76,12 @@
                 style="width: 100%;"
             />
             </n-form-item-gi>
-            <n-gi :span="1" /> <n-form-item-gi label="配送费用 (分)" path="deliveryPrice">
-            <n-input-number v-model:value="formData.deliveryPrice" :min="0" placeholder="例如: 500 (代表5元)" style="width: 100%;" />
+            <n-gi :span="1" /> <n-form-item-gi label="配送费用 (元)" path="deliveryPrice">
+            <n-input-number v-model:value="formData.deliveryPrice" :min="0" :precision="2" placeholder="例如: 5.00" style="width: 100%;" />
             </n-form-item-gi>
 
-            <n-form-item-gi label="起送价格 (分)" path="deliveryThreshold">
-            <n-input-number v-model:value="formData.deliveryThreshold" :min="0" placeholder="例如: 2000 (代表20元)" style="width: 100%;" />
+            <n-form-item-gi label="起送价格 (元)" path="deliveryThreshold">
+            <n-input-number v-model:value="formData.deliveryThreshold" :min="0" :precision="2" placeholder="例如: 20.00" style="width: 100%;" />
             </n-form-item-gi>
 
             <n-form-item-gi label="最远配送距离 (公里)" path="maximumDistance">
@@ -120,9 +120,6 @@
             </n-form-item-gi>
             <n-form-item-gi label="县级行政区" path="address.district">
                 <n-input v-model:value="formData.address.district" placeholder="例如：海淀区" />
-            </n-form-item-gi>
-            <n-form-item-gi label="乡级行政区 (可选)" path="address.town">
-                <n-input v-model:value="formData.address.town" placeholder="例如：中关村街道" />
             </n-form-item-gi>
             <n-form-item-gi :span="2" label="详细地址" path="address.address">
                 <n-input v-model:value="formData.address.address" placeholder="请输入街道、楼牌号等" />
@@ -178,11 +175,12 @@ import {
 import { CloudUploadOutline, LocateOutline } from '@vicons/ionicons5'
 import { useGeolocation, type GeolocationError } from '@/composables/useGeolocation';
 import { v4 as uuidv4 } from 'uuid'; // 用于生成模拟 ID
+import { getShopCategories } from '@/api/shop';
 
 // --- 数据模型定义 (与 ShopEditForm.vue 一致) ---
 interface 地址 {
     address: string; city: string; coordinate: [number | null, number | null]; district: string;
-    name: string; province: string; tel: string; town?: string;
+    name: string; province: string; tel: string;
 }
 interface 店铺资料Creatable { // 用于创建，ID 由后端生成或在保存时生成
     name: string; description: string; avatarUrl?: string; opened: boolean;
@@ -199,7 +197,7 @@ const isSaving = ref(false)
 
 // 初始化表单数据
 const initialAddress: 地址 = {
-    name: '', tel: '', province: '', city: '', district: '', town: '',
+    name: '', tel: '', province: '', city: '', district: '',
     address: '', coordinate: [null, null]
 };
 const formData = ref<店铺资料Creatable>({
@@ -217,28 +215,51 @@ const newAvatarFile = ref<File | null>(null)
 const openTimeDisplay = ref<string | null>(null)
 const closeTimeDisplay = ref<string | null>(null)
 
-const categoryOptions: SelectOption[] = [
-    { label: '快餐便当', value: 'fast_food' }, { label: '甜品饮品', value: 'dessert_drink' },
-    { label: '川湘菜', value: 'sichuan_hunan' }, { label: '地方小吃', value: 'local_snacks' },
-    { label: '日韩料理', value: 'japanese_korean' }, { label: '超市便利', value: 'supermarket' },
-];
+const categoryOptions = ref<SelectOption[]>([]);
 
-// --- 时间转换工具函数 (与 ShopEditForm.vue 一致) ---
-const hhMMToMinutes = (timeStr: string | null): number | null => {
-    if (!timeStr) return null;
-    const parts = timeStr.split(':');
-    if (parts.length !== 2) return null;
-    const h = parseInt(parts[0], 10);
-    const m = parseInt(parts[1], 10);
-    if (isNaN(h) || isNaN(m) || h < 0 || h > 23 || m < 0 || m > 59) return null;
-    return h * 60 + m;
+const fetchCategories = async () => {
+    try {
+        const categories = await getShopCategories();
+        categoryOptions.value.splice(0, categoryOptions.value.length, ...categories.map(c => ({ label: c.name, value: c.id })));
+    } catch (err: any) {
+        message.error('获取店铺分类失败');
+    }
 };
 
+fetchCategories();
+
+// --- 时间转换工具函数 (与 ShopEditForm.vue 一致) ---
+const hhMMToUtcMinutes = (timeStr: string | null): number | null => {
+    if (!timeStr) return null;
+    const [h, m] = timeStr.split(":").map(Number);
+    if (isNaN(h) || isNaN(m)) return null;
+    const now = new Date();
+    now.setHours(h, m, 0, 0);
+    // 得到本地当天的时间戳
+    const local = new Date(now.getFullYear(), now.getMonth(), now.getDate(), h, m, 0, 0);
+    // 得到UTC当天0点的时间戳
+    const utc0 = Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate(), 0, 0, 0, 0);
+    // 得到UTC分钟数
+    return Math.round((local.getTime() - utc0) / 60000);
+};
+// UTC分钟数转本地时间字符串
+const utcMinutesToHHMM = (minutes: number | null): string | null => {
+    if (minutes === null || minutes < 0 || minutes > 1439) return null;
+    // UTC当天0点
+    const utc0 = new Date(Date.UTC(1970, 0, 1, 0, 0, 0, 0));
+    // 加上分钟数
+    const local = new Date(utc0.getTime() + minutes * 60000);
+    const h = local.getHours();
+    const m = local.getMinutes();
+    return `${h < 10 ? '0' + h : h}:${m < 10 ? '0' + m : m}`;
+};
+
+// 修改watch和初始化营业时间显示
 watch(openTimeDisplay, (newTime) => {
-    formData.value.openTimeStart = hhMMToMinutes(newTime);
+    formData.value.openTimeStart = hhMMToUtcMinutes(newTime);
 });
 watch(closeTimeDisplay, (newTime) => {
-    formData.value.openTimeEnd = hhMMToMinutes(newTime);
+    formData.value.openTimeEnd = hhMMToUtcMinutes(newTime);
 });
 
 const formRules: FormRules = {
@@ -272,9 +293,6 @@ const formRules: FormRules = {
     coordinate: [
         { type: 'array', required: true, validator: (_: FormItemRule, value: [number | null, number | null] | undefined) => {
             if (!value || value[0] === null || value[1] === null) return new Error('请输入经纬度');
-            if (typeof value[0] !== 'number' || typeof value[1] !== 'number') return new Error('经纬度必须是数字');
-            if (value[0] < -180 || value[0] > 180) return new Error('经度范围应在 -180 到 180 之间');
-            if (value[1] < -90 || value[1] > 90) return new Error('纬度范围应在 -90 到 90 之间');
             return true;
         }, trigger: ['input', 'blur'] },
     ]
@@ -331,36 +349,44 @@ const handleAvatarRemove = () => {
 
 const handleSave = (e: MouseEvent) => {
     e.preventDefault();
-    formData.value.openTimeStart = hhMMToMinutes(openTimeDisplay.value);
-    formData.value.openTimeEnd = hhMMToMinutes(closeTimeDisplay.value);
-
+    // 价格元转分
+    const deliveryPriceFen = Math.round((formData.value.deliveryPrice ?? 0) * 100);
+    const deliveryThresholdFen = Math.round((formData.value.deliveryThreshold ?? 0) * 100);
+    // 营业时间已为UTC分钟数
     formRef.value?.validate(async (errors) => {
     if (!errors) {
         isSaving.value = true;
-        const newShopId = `shop-${uuidv4().slice(0,8)}`; // 生成一个模拟的新ID
-        const shopToCreate = {
-        ...formData.value,
-        id: newShopId, // 添加ID
-        verified: false, // 新店铺默认为未认证
-        };
-
-        if (newAvatarFile.value) {
-        console.log('新头像文件待上传:', newAvatarFile.value.name);
-        shopToCreate.avatarUrl = `https://picsum.photos/seed/${newShopId}-${Date.now()}/200/200`; // 模拟上传后URL
+        try {
+            const { createShop, updateShopImages } = await import('@/api/shop');
+            const address = {
+                ...formData.value.address,
+                id: '',
+                isDefault: false,
+                coordinate: [
+                    formData.value.address.coordinate[0] ?? 0,
+                    formData.value.address.coordinate[1] ?? 0
+                ]
+            };
+            const shopProfile = {
+                ...formData.value,
+                openTimeStart: formData.value.openTimeStart ?? 0,
+                openTimeEnd: formData.value.openTimeEnd ?? 0,
+                deliveryPrice: deliveryPriceFen,
+                deliveryThreshold: deliveryThresholdFen,
+                maximumDistance: formData.value.maximumDistance ?? 0,
+                address
+            };
+            const createdShop = await createShop(shopProfile);
+            if (newAvatarFile.value) {
+                await updateShopImages(createdShop.id, { cover: newAvatarFile.value });
+            }
+            isSaving.value = false;
+            message.success(`店铺 “${createdShop.name}” 创建成功！`);
+            router.push(`/merchant/shops/${createdShop.id}/detail`);
+        } catch (err: any) {
+            isSaving.value = false;
+            message.error(err?.response?.data?.message || '创建店铺失败，请稍后重试');
         }
-        
-        console.log('创建新店铺数据:', JSON.parse(JSON.stringify(shopToCreate)));
-        // 在实际项目中，这里会调用 API 创建店铺
-        // 模拟添加到 ShopEditForm 和 ShopDetail 中的 mockShopDatabase (如果它们是共享的或全局的)
-        // ((window as any).mockShopDatabaseForEdit || {})[newShopId] = shopToCreate; // 这是一个hacky的模拟方式
-        // 此处我们仅作演示，实际应更新后端或状态管理库
-
-        await new Promise(resolve => setTimeout(resolve, 1000));
-        isSaving.value = false;
-        message.success(`店铺 “${shopToCreate.name}” 创建成功！`);
-        // 创建成功后，可以跳转到新店铺的详情页或店铺列表页
-        router.push(`/merchant/shops/${newShopId}/detail`); 
-        // 或者 router.push('/merchant/shops');
     } else {
         message.error('请检查表单输入项！');
     }

@@ -92,11 +92,11 @@
             <n-gi :span="1" />
 
             <n-form-item-gi label="配送费用 (元)" path="deliveryPrice">
-            <n-input-number v-model:value="formData.deliveryPrice" :min="0" placeholder="例如: 500 (代表5元)" style="width: 100%;" />
+              <n-input-number v-model:value="formData.deliveryPrice" :min="0" :precision="2" placeholder="例如: 5.00" style="width: 100%;" />
             </n-form-item-gi>
 
             <n-form-item-gi label="起送价格 (元)" path="deliveryThreshold">
-            <n-input-number v-model:value="formData.deliveryThreshold" :min="0" placeholder="例如: 2000 (代表20元)" style="width: 100%;" />
+              <n-input-number v-model:value="formData.deliveryThreshold" :min="0" :precision="2" placeholder="例如: 20.00" style="width: 100%;" />
             </n-form-item-gi>
 
             <n-form-item-gi label="最远配送距离 (公里)" path="maximumDistance">
@@ -135,9 +135,6 @@
             </n-form-item-gi>
             <n-form-item-gi label="县级行政区" path="address.district">
                 <n-input v-model:value="formData.address.district" placeholder="例如：海淀区" />
-            </n-form-item-gi>
-            <n-form-item-gi label="乡级行政区 (可选)" path="address.town">
-                <n-input v-model:value="formData.address.town" placeholder="例如：中关村街道" />
             </n-form-item-gi>
             <n-form-item-gi :span="2" label="详细地址" path="address.address">
                 <n-input v-model:value="formData.address.address" placeholder="请输入街道、楼牌号等" />
@@ -193,6 +190,7 @@ import {
 } from 'naive-ui'
 import { CloudUploadOutline, LocateOutline } from '@vicons/ionicons5'
 import { useGeolocation, type GeolocationError } from '@/composables/useGeolocation';
+import { getShopCategories, updateShopProfile, updateShopImages, getShopInfo } from '@/api/shop';
 
 // --- 数据模型定义 ---
 interface 地址 {
@@ -203,7 +201,6 @@ interface 地址 {
     name: string;
     province: string;
     tel: string;
-    town?: string;
 }
 
 interface 店铺资料Editable {
@@ -245,123 +242,60 @@ const pageTitle = computed(() => {
     return formData.value ? `编辑店铺 - ${formData.value.name}` : '编辑店铺信息'
 })
 
-const categoryOptions: SelectOption[] = [
-    { label: '快餐便当', value: 'fast_food' }, { label: '甜品饮品', value: 'dessert_drink' },
-    { label: '川湘菜', value: 'sichuan_hunan' }, { label: '地方小吃', value: 'local_snacks' },
-    { label: '日韩料理', value: 'japanese_korean' }, { label: '超市便利', value: 'supermarket' },
-];
+const categoryOptions = ref<SelectOption[]>([]);
 
-const mockShopDatabase: Record<string, 店铺资料Editable> = {
-    'shop-1': {
-    id: 'shop-1', name: '创意轻食坊', description: '健康美味，沙拉与三明治首选。',
-    avatarUrl: 'https://picsum.photos/seed/shop-1/200/200',
-    opened: true, openTimeStart: 540, openTimeEnd: 1200, // 09:00 - 20:00
-    deliveryPrice: 5, deliveryThreshold: 20, maximumDistance: 3.0,
-    categories: ['fast_food', 'local_snacks'],
-    address: {
-        name: '李经理', tel: '13800001111', province: '北京市', city: '北京市', district: '海淀区', town: '中关村街道',
-        address: '宇宙中心五道口大厦101室', coordinate: [116.334935, 39.996249]
-    },
-    verified: true
-    },
+const fetchCategories = async () => {
+    try {
+        const categories = await getShopCategories();
+        categoryOptions.value = categories.map(c => ({ label: c.name, value: c.id }));
+    } catch (err: any) {
+        message.error('获取店铺分类失败');
+    }
 };
-
-// --- 时间转换工具函数 ---
-const minutesToHHMM = (minutes: number | null): string | null => {
-    if (minutes === null || minutes < 0 || minutes > 1439) return null;
-    const h = Math.floor(minutes / 60);
-    const m = minutes % 60;
-    return `${h < 10 ? '0' + h : h}:${m < 10 ? '0' + m : m}`;
-};
-
-const hhMMToMinutes = (timeStr: string | null): number | null => {
-    if (!timeStr) return null;
-    const parts = timeStr.split(':');
-    if (parts.length !== 2) return null;
-    const h = parseInt(parts[0], 10);
-    const m = parseInt(parts[1], 10);
-    if (isNaN(h) || isNaN(m) || h < 0 || h > 23 || m < 0 || m > 59) return null;
-    return h * 60 + m;
-};
-
 
 const fetchShopData = async (id: string) => {
     isLoading.value = true;
-    await new Promise(resolve => setTimeout(resolve, 500));
-    const data = mockShopDatabase[id];
-    if (data) {
-    formData.value = JSON.parse(JSON.stringify(data));
-    // 初始化时间选择器的显示值
-    if (formData.value) {
-        openTimeDisplay.value = minutesToHHMM(formData.value.openTimeStart);
-        closeTimeDisplay.value = minutesToHHMM(formData.value.openTimeEnd);
-    }
-
-    if (formData.value && formData.value.avatarUrl) {
-        avatarFileList.value = [{
-        id: 'current-avatar', name: '当前头像', status: 'finished', url: formData.value.avatarUrl,
-        }];
-    } else {
-        avatarFileList.value = [];
-    }
-    newAvatarFile.value = null;
-    } else {
-    message.error('无法找到该店铺数据');
-    formData.value = null;
+    try {
+        const data = await getShopInfo(id);
+        // 分转元
+        data.deliveryPrice = typeof data.deliveryPrice === 'number' ? +(data.deliveryPrice / 100).toFixed(2) : 0;
+        data.deliveryThreshold = typeof data.deliveryThreshold === 'number' ? +(data.deliveryThreshold / 100).toFixed(2) : 0;
+        formData.value = JSON.parse(JSON.stringify(data));
+        if (formData.value) {
+            openTimeDisplay.value = utcMinutesToHHMM(formData.value.openTimeStart);
+            closeTimeDisplay.value = utcMinutesToHHMM(formData.value.openTimeEnd);
+        }
+        if (formData.value && formData.value.avatarUrl) {
+            avatarFileList.value = [{
+                id: 'current-avatar', name: '当前头像', status: 'finished', url: formData.value.avatarUrl,
+            }];
+        } else {
+            avatarFileList.value = [];
+        }
+        newAvatarFile.value = null;
+    } catch (err) {
+        message.error('无法加载店铺信息');
+        formData.value = null;
     }
     isLoading.value = false;
 };
 
-const {
-  coordinates: currentLocation,
-  error: geolocationError,
-  isLocating,
-  getCurrentLocation
-} = useGeolocation();
-
-const fetchCurrentLocation = async () => {
-  try {
-    // 请求高精度定位，超时时间10秒
-    const coords = await getCurrentLocation({ enableHighAccuracy: true, timeout: 10000 });
-    if (formData.value && formData.value.address) {
-      // Geolocation API 返回的是 coords.longitude 和 coords.latitude
-      console.log(coords.latitude)
-      console.log(coords.longitude)
-      console.log(coords)
-      formData.value.address.coordinate = [
-        parseFloat(coords.longitude.toFixed(6)), // 保留6位小数
-        parseFloat(coords.latitude.toFixed(6))
-      ];
-      message.success(`定位成功：经度 ${coords.longitude.toFixed(6)}, 纬度 ${coords.latitude.toFixed(6)}`);
-      geolocationError.value = null; // 清除旧的错误信息
-    }
-  } catch (err) {
-    // geolocationError ref 已经在 composable 内部被设置了
-    // message.error(`定位失败: ${(err as GeolocationError).message}`); // composable 会设置 error.value
-    console.error("Geolocation error from component:", err);
-    // 可以在此处理特定于组件的错误反馈，如果 composable 中的错误处理不够的话
-  }
-};
-
 onMounted(() => {
+    fetchCategories();
     if (shopId.value) {
-    fetchShopData(shopId.value);
+        fetchShopData(shopId.value);
     } else {
-    message.error('无效的店铺ID');
-    router.replace('/merchant/shops');
+        message.error('无效的店铺ID');
+        router.replace('/merchant/shops');
     }
 });
 
 // 监听 HH:mm 字符串变化，同步更新 formData 中的分钟数
 watch(openTimeDisplay, (newTime) => {
-    if (formData.value) {
-    formData.value.openTimeStart = hhMMToMinutes(newTime);
-    }
+    if (formData.value) formData.value.openTimeStart = hhMMToUtcMinutes(newTime);
 });
 watch(closeTimeDisplay, (newTime) => {
-    if (formData.value) {
-    formData.value.openTimeEnd = hhMMToMinutes(newTime);
-    }
+    if (formData.value) formData.value.openTimeEnd = hhMMToUtcMinutes(newTime);
 });
 
 
@@ -399,13 +333,37 @@ const formRules: FormRules = {
     coordinate: [
         { type: 'array', required: true, validator: (rule: FormItemRule, value: [number | null, number | null]) => {
             if (value === null || value[0] === null || value[1] === null) return new Error('请输入经纬度');
-            if (typeof value[0] !== 'number' || typeof value[1] !== 'number') return new Error('经纬度必须是数字');
-            if (value[0] < -180 || value[0] > 180) return new Error('经度范围应在 -180 到 180 之间');
-            if (value[1] < -90 || value[1] > 90) return new Error('纬度范围应在 -90 到 90 之间');
             return true;
         }, trigger: ['input', 'blur'] },
     ]
     }
+};
+
+// --- 时间转换工具函数 ---
+// 本地时间字符串转UTC分钟数
+const hhMMToUtcMinutes = (timeStr: string | null): number | null => {
+    if (!timeStr) return null;
+    const [h, m] = timeStr.split(":").map(Number);
+    if (isNaN(h) || isNaN(m)) return null;
+    const now = new Date();
+    now.setHours(h, m, 0, 0);
+    // 得到本地当天的时间戳
+    const local = new Date(now.getFullYear(), now.getMonth(), now.getDate(), h, m, 0, 0);
+    // 得到UTC当天0点的时间戳
+    const utc0 = Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate(), 0, 0, 0, 0);
+    // 得到UTC分钟数
+    return Math.round((local.getTime() - utc0) / 60000);
+};
+// UTC分钟数转本地时间字符串
+const utcMinutesToHHMM = (minutes: number | null): string | null => {
+    if (minutes === null || minutes < 0 || minutes > 1439) return null;
+    // UTC当天0点
+    const utc0 = new Date(Date.UTC(1970, 0, 1, 0, 0, 0, 0));
+    // 加上分钟数
+    const local = new Date(utc0.getTime() + minutes * 60000);
+    const h = local.getHours();
+    const m = local.getMinutes();
+    return `${h < 10 ? '0' + h : h}:${m < 10 ? '0' + m : m}`;
 };
 
 // ... handleCustomAvatarRequest, handleAvatarChange, handleAvatarRemove 保持不变 ...
@@ -430,35 +388,78 @@ const handleAvatarRemove = () => {
     return true;
 };
 
+const {
+  coordinates: currentLocation,
+  error: geolocationError,
+  isLocating,
+  getCurrentLocation
+} = useGeolocation();
+
+const fetchCurrentLocation = async () => {
+  try {
+    // 请求高精度定位，超时时间10秒
+    const coords = await getCurrentLocation({ enableHighAccuracy: true, timeout: 10000 });
+    if (formData.value && formData.value.address) {
+      formData.value.address.coordinate = [
+        parseFloat(coords.longitude.toFixed(6)),
+        parseFloat(coords.latitude.toFixed(6))
+      ];
+      message.success(`定位成功：经度 ${coords.longitude.toFixed(6)}, 纬度 ${coords.latitude.toFixed(6)}`);
+      geolocationError.value = null;
+    }
+  } catch (err) {
+    // geolocationError ref 已经在 composable 内部被设置了
+    // message.error(`定位失败: ${(err as GeolocationError).message}`);
+    console.error("Geolocation error from component:", err);
+  }
+};
+
 const handleSave = (e: MouseEvent) => {
     e.preventDefault();
-    // 在验证前，确保 formData 中的 openTimeStart/End 是最新的分钟数
     if (formData.value) {
-        formData.value.openTimeStart = hhMMToMinutes(openTimeDisplay.value);
-        formData.value.openTimeEnd = hhMMToMinutes(closeTimeDisplay.value);
+        // 价格元转分
+        const deliveryPriceFen = Math.round((formData.value.deliveryPrice ?? 0) * 100);
+        const deliveryThresholdFen = Math.round((formData.value.deliveryThreshold ?? 0) * 100);
+        // 营业时间已为UTC分钟数
+        formData.value.openTimeStart = hhMMToUtcMinutes(openTimeDisplay.value);
+        formData.value.openTimeEnd = hhMMToUtcMinutes(closeTimeDisplay.value);
+        formRef.value?.validate(async (errors) => {
+            if (!errors && formData.value) {
+                isSaving.value = true;
+                try {
+                    const address = {
+                        ...formData.value.address,
+                        coordinate: [
+                            formData.value.address.coordinate[0] ?? 0,
+                            formData.value.address.coordinate[1] ?? 0
+                        ]
+                    };
+                    const profile = {
+                        ...formData.value,
+                        openTimeStart: formData.value.openTimeStart ?? 0,
+                        openTimeEnd: formData.value.openTimeEnd ?? 0,
+                        deliveryPrice: deliveryPriceFen,
+                        deliveryThreshold: deliveryThresholdFen,
+                        maximumDistance: formData.value.maximumDistance ?? 0,
+                        address,
+                        categories: formData.value.categories
+                    };
+                    await updateShopProfile(formData.value.id, profile);
+                    if (newAvatarFile.value) {
+                        await updateShopImages(formData.value.id, { cover: newAvatarFile.value });
+                    }
+                    isSaving.value = false;
+                    message.success('店铺信息保存成功！');
+                    router.push(`/merchant/shops/${shopId.value}/detail`);
+                } catch (err: any) {
+                    isSaving.value = false;
+                    message.error(err?.response?.data?.message || '保存失败，请稍后重试');
+                }
+            } else {
+                message.error('请检查表单输入项！');
+            }
+        });
     }
-
-    formRef.value?.validate(async (errors) => {
-    if (!errors && formData.value) {
-        isSaving.value = true;
-        console.log('待保存的店铺数据:', JSON.parse(JSON.stringify(formData.value)));
-        if (newAvatarFile.value) {
-        console.log('新头像文件待上传:', newAvatarFile.value.name, newAvatarFile.value.type);
-        formData.value.avatarUrl = `https://picsum.photos/seed/${formData.value.id}-${Date.now()}/200/200`;
-        }
-        
-        if (mockShopDatabase[formData.value.id]) {
-        mockShopDatabase[formData.value.id] = JSON.parse(JSON.stringify(formData.value));
-        }
-
-        await new Promise(resolve => setTimeout(resolve, 1000));
-        isSaving.value = false;
-        message.success('店铺信息保存成功！');
-        router.push(`/merchant/shops/${shopId.value}/detail`);
-    } else {
-        message.error('请检查表单输入项！');
-    }
-    });
 };
 
 const handleCancel = () => {

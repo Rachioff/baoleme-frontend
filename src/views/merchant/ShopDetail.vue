@@ -56,7 +56,7 @@
                 </n-descriptions-item>
                 <n-descriptions-item label="营业时间 (每日)">
                     <span v-if="shop.openTimeStart !== null && shop.openTimeEnd !== null">
-                    {{ minutesToHHMM(shop.openTimeStart) }} - {{ minutesToHHMM(shop.openTimeEnd) }}
+                    {{ utcMinutesToHHMM(shop.openTimeStart) }} - {{ utcMinutesToHHMM(shop.openTimeEnd) }}
                     </span>
                     <span v-else>未设置</span>
                 </n-descriptions-item>
@@ -73,10 +73,10 @@
             <n-card title="配送与费用" class="detail-card" :segmented="{ content: true }">
                 <n-descriptions label-placement="left" bordered :column="1" size="small">
                 <n-descriptions-item label="配送费用">
-                    {{ formatPrice(shop.deliveryPrice) }}
+                    {{ shop.deliveryPrice !== null ? `¥${shop.deliveryPrice.toFixed(2)}` : '未设置' }}
                 </n-descriptions-item>
                 <n-descriptions-item label="起送价格">
-                    {{ formatPrice(shop.deliveryThreshold) }}
+                    {{ shop.deliveryThreshold !== null ? `¥${shop.deliveryThreshold.toFixed(2)}` : '未设置' }}
                 </n-descriptions-item>
                 <n-descriptions-item label="最远配送距离">
                     {{ shop.maximumDistance !== null ? `${shop.maximumDistance} 公里` : '未设置' }}
@@ -129,7 +129,7 @@ import {
     CreateOutline, StorefrontOutline, LocationOutline, CallOutline, StarOutline, // StarOutline 可以替换为其他相关图标
     // ArrowBackOutline // n-page-header自带返回
 } from '@vicons/ionicons5'
-// import { format } from 'date-fns' // 如果需要更复杂的日期格式化
+import { getShopInfo, getShopCategories } from '@/api/shop'
 
 // --- 复用 ShopEditForm.vue 中的数据模型定义 ---
 interface 地址 {
@@ -172,34 +172,34 @@ const shopId = computed(() => route.params.shopId as string)
 const shop = ref<店铺资料 | null>(null) // 使用更新后的接口
 const isLoading = ref(true)
 const currentTab = ref('overview')
+const categoryMap = ref<Record<string, string>>({});
 
-// --- 复用 ShopEditForm.vue 中的模拟数据库和类型选项 ---
-const mockShopDatabaseFromEdit: Record<string, 店铺资料> = { // 类型改为 店铺资料
-    'shop-1': {
-    id: 'shop-1', name: '创意轻食坊', description: '健康美味，沙拉与三明治首选。',
-    avatarUrl: 'https://picsum.photos/seed/shop-1/200/200',
-    opened: true, openTimeStart: 540, openTimeEnd: 1200,
-    deliveryPrice: 500, deliveryThreshold: 2000, maximumDistance: 3.0,
-    categories: ['fast_food', 'local_snacks'],
-    address: {
-        name: '李经理', tel: '13800001111', province: '北京市', city: '北京市', district: '海淀区', town: '中关村街道',
-        address: '宇宙中心五道口大厦101室', coordinate: [116.334935, 39.996249]
-    },
-    verified: true, rating: 4.8, createdAt: new Date(Date.now() - 20 * 24 * 60 * 60 * 1000).toISOString()
-    },
-    'shop-2': {
-    id: 'shop-2', name: '甜蜜角落咖啡馆', description: '手冲咖啡与精致甜点。',
-    avatarUrl: 'https://picsum.photos/seed/shop-2/200/200',
-    opened: false, openTimeStart: 600, openTimeEnd: 1080,
-    deliveryPrice: 300, deliveryThreshold: 1500, maximumDistance: 2.0,
-    categories: ['dessert_drink'],
-    address: {
-        name: '王老板', tel: '13911112222', province: '上海市', city: '上海市', district: '徐汇区',
-        address: '衡山路123号', coordinate: [121.452323, 31.209175]
-    },
-    verified: false, rating: 4.2, createdAt: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000).toISOString()
-    },
-};
+// const mockShopDatabaseFromEdit: Record<string, 店铺资料> = { // 类型改为 店铺资料
+//     'shop-1': {
+//     id: 'shop-1', name: '创意轻食坊', description: '健康美味，沙拉与三明治首选。',
+    // avatarUrl: 'https://picsum.photos/seed/shop-1/200/200',
+    // opened: true, openTimeStart: 540, openTimeEnd: 1200,
+    // deliveryPrice: 500, deliveryThreshold: 2000, maximumDistance: 3.0,
+    // categories: ['fast_food', 'local_snacks'],
+    // address: {
+    //     name: '李经理', tel: '13800001111', province: '北京市', city: '北京市', district: '海淀区', town: '中关村街道',
+    //     address: '宇宙中心五道口大厦101室', coordinate: [116.334935, 39.996249]
+    // },
+    // verified: true, rating: 4.8, createdAt: new Date(Date.now() - 20 * 24 * 60 * 60 * 1000).toISOString()
+    // },
+//     'shop-2': {
+//     id: 'shop-2', name: '甜蜜角落咖啡馆', description: '手冲咖啡与精致甜点。',
+    // avatarUrl: 'https://picsum.photos/seed/shop-2/200/200',
+    // opened: false, openTimeStart: 600, openTimeEnd: 1080,
+    // deliveryPrice: 300, deliveryThreshold: 1500, maximumDistance: 2.0,
+    // categories: ['dessert_drink'],
+    // address: {
+    //     name: '王老板', tel: '13911112222', province: '上海市', city: '上海市', district: '徐汇区',
+    //     address: '衡山路123号', coordinate: [121.452323, 31.209175]
+    // },
+    // verified: false, rating: 4.2, createdAt: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000).toISOString()
+    // },
+// };
 
 // 模拟店铺类型选项 (与 ShopEditForm.vue 中保持一致，用于显示)
 const categoryDisplayMap: Record<string, string> = {
@@ -214,50 +214,57 @@ const categoryDisplayMap: Record<string, string> = {
 
 const fetchShopDetails = async (id: string) => {
     isLoading.value = true;
-    console.log(`详情页: 模拟获取店铺 ${id} 的详细信息...`);
-    await new Promise(resolve => setTimeout(resolve, 300)); // 模拟延迟
-
-    // 尝试从编辑表单的模拟数据库获取最新数据（如果它被更新了）
-    // 注意：这仅用于演示目的，实际项目中应有统一数据源或状态管理
-    const potentiallyUpdatedShop = (window as any).mockShopDatabaseForEdit?.[id]; // 假设编辑表单的mockDB暴露到window
-    const data = potentiallyUpdatedShop || mockShopDatabaseFromEdit[id];
-
-
-    if (data) {
-    shop.value = JSON.parse(JSON.stringify(data)); // 深拷贝
-    } else {
-    shop.value = null;
-    message.error('店铺信息加载失败或店铺不存在');
+    try {
+        const data = await getShopInfo(id);
+        // 分转元
+        data.deliveryPrice = typeof data.deliveryPrice === 'number' ? +(data.deliveryPrice / 100).toFixed(2) : 0;
+        data.deliveryThreshold = typeof data.deliveryThreshold === 'number' ? +(data.deliveryThreshold / 100).toFixed(2) : 0;
+        shop.value = JSON.parse(JSON.stringify(data));
+    } catch (err) {
+        shop.value = null;
+        message.error('店铺信息加载失败或店铺不存在');
     }
     isLoading.value = false;
 };
 
-// --- 复用时间转换函数 ---
-const minutesToHHMM = (minutes: number | null): string => {
+const fetchCategories = async () => {
+    try {
+        const categories = await getShopCategories();
+        categoryMap.value = Object.fromEntries(categories.map(c => [c.id, c.name]));
+    } catch {
+        categoryMap.value = {};
+    }
+};
+
+// --- 时间转换函数 ---
+const utcMinutesToHHMM = (minutes: number | null): string => {
     if (minutes === null || minutes < 0 || minutes > 1439) return '未设置';
-    const h = Math.floor(minutes / 60);
-    const m = minutes % 60;
+    const utc0 = new Date(Date.UTC(1970, 0, 1, 0, 0, 0, 0));
+    const local = new Date(utc0.getTime() + minutes * 60000);
+    const h = local.getHours();
+    const m = local.getMinutes();
     return `${h < 10 ? '0' + h : h}:${m < 10 ? '0' + m : m}`;
 };
 
 // 价格格式化 (分 -> 元)
-const formatPrice = (priceInCents: number | null): string => {
-    if (priceInCents === null || typeof priceInCents !== 'number') return '未设置';
-    return `¥${(priceInCents / 100).toFixed(2)}`;
-};
+// const formatPrice = (priceInCents: number | null): string => {
+//     if (priceInCents === null || typeof priceInCents !== 'number') return '未设置';
+//     return `¥${(priceInCents / 100).toFixed(2)}`;
+// };
 
 // 格式化分类显示
 const formatCategory = (categoryKey: string): string => {
-    return categoryDisplayMap[categoryKey] || categoryKey;
+    return categoryMap.value[categoryKey] || categoryKey;
 }
 
 
 onMounted(() => {
+    fetchCategories();
     if (shopId.value) {
-    fetchShopDetails(shopId.value);
+        fetchShopDetails(shopId.value);
     } else {
-    message.error('无效的店铺ID');
-    isLoading.value = false;
+        message.error('无效的店铺ID');
+        isLoading.value = false;
     }
 });
 
