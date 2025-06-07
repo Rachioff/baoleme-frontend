@@ -107,7 +107,7 @@ const handleAvatarClicked = () => {
             </n-card>
             <n-modal v-model:show="showAvatarUploader">
                 <avatar-uploader
-                    :user-id="isCurrentUser ? '00000000-0000-0000-0000-000000000000' : props.userId"
+                    :user-id="props.userId"
                     :image-src="userData?.avatar.origin"
                     @finish="(originLink: string, thumbnailLink: string) => {
                         if (!userData)
@@ -120,7 +120,7 @@ const handleAvatarClicked = () => {
             </n-modal>
             <n-modal v-model:show="showProfileEditor">
                 <profile-editor
-                    :user-id="isCurrentUser ? '00000000-0000-0000-0000-000000000000' : props.userId"
+                    :user-id="props.userId"
                     :user-data="userData ?? undefined"
                     @finish="(profile: UserProfile) => {
                         if (!userData)
