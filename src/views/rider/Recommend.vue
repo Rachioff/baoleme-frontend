@@ -12,7 +12,9 @@
           <n-button @click="applyFilters">应用筛选</n-button>
         </div>
         <n-spin :show="loading">
-          <n-list>
+          <n-list v-infinite-scroll="() => fetchOrders(true)" 
+                 :infinite-scroll-disabled="loading || !hasMore" 
+                 :infinite-scroll-distance="10">
             <n-list-item v-for="order in newOrders" :key="order.id">
               <n-card class="order-item">
                 <div class="order-header">
@@ -90,12 +92,21 @@
                 </div>
               </n-card>
             </n-list-item>
+            <n-empty v-if="!loading && newOrders.length === 0" description="暂无订单" />
+            <div v-if="loading" class="loading-more">
+              <n-spin size="small" /> 加载中...
+            </div>
+            <div v-if="!loading && !hasMore && newOrders.length > 0" class="no-more">
+              没有更多订单了
+            </div>
           </n-list>
         </n-spin>
       </n-tab-pane>
       
       <n-tab-pane name="delivering" tab="配送中">
-        <n-list>
+        <n-list v-infinite-scroll="() => fetchOrders(true)"
+               :infinite-scroll-disabled="loading || !hasMore"
+               :infinite-scroll-distance="10">
           <n-list-item v-for="order in deliveringOrders" :key="order.id">
             <n-card class="order-item">
               <div class="order-header">
@@ -156,22 +167,36 @@
                 </n-button>
               </div>
             </n-card>
-          </n-list-item>
-        </n-list>
+          </n-list-item>            <n-empty v-if="!loading && deliveringOrders.length === 0" description="暂无配送中的订单" />
+            <div v-if="loading" class="loading-more">
+              <n-spin size="small" /> 加载中...
+            </div>
+            <div v-if="!loading && !hasMore && deliveringOrders.length > 0" class="no-more">
+              没有更多订单了
+            </div>
+          </n-list>
       </n-tab-pane>
     </n-tabs>
 
-    <n-modal v-model:show="showMapModalFlag" title="配送地图">
-      <p>这里应该显示地图，标记骑手位置和送货地址</p>
+    <n-modal v-model:show="showMapModalFlag" title="配送地图" style="width: 90%; max-width: 800px;">
+      <delivery-map v-if="selectedOrder && showMapModalFlag"
+        :start-longitude="selectedOrder.shop.longitude"
+        :start-latitude="selectedOrder.shop.latitude"
+        :current-longitude="riderLon"
+        :current-latitude="riderLat"
+        :end-longitude="selectedOrder.customerAddress.longitude"
+        :end-latitude="selectedOrder.customerAddress.latitude"
+      />
     </n-modal>
   </div>
 </template>
 
 <script setup>
-import { ref, onMounted, computed } from 'vue'
+import { ref, onMounted, computed, watch } from 'vue'
 import { useMessage } from 'naive-ui'
 import { ChevronDown, MapOutline, CallOutline } from '@vicons/ionicons5'
 import axios from 'axios'
+import DeliveryMap from '../DeliveryMap.vue'
 
 // 状态变量
 const activeTab = ref('new')
@@ -184,6 +209,11 @@ const showMapModalFlag = ref(false)
 const selectedOrder = ref(null)
 const expandedItems = ref({})
 const expandedNotes = ref({})
+
+// 分页相关
+const currentPage = ref(1)
+const pageSize = 10
+const hasMore = ref(true)
 
 const sortField = ref('deliveryFee')
 const maxDistance = ref(null)
@@ -203,13 +233,15 @@ const newOrders = computed(() => orders.value.filter(order => order.status === '
 const deliveringOrders = computed(() => orders.value.filter(order => order.status === 'delivering'))
 
 // 获取订单列表
-const fetchOrders = async () => {
+const fetchOrders = async (isLoadMore = false) => {
+  if (loading.value || (!isLoadMore && !hasMore.value)) return
+
   try {
     loading.value = true
     const response = await axios.get('/recommended/orders', {
       params: {
-        p: 0,
-        pn: 10,
+        p: currentPage.value,
+        pn: pageSize,
         s: sortField.value,
         d: maxDistance.value,
         t: maxTime.value,
@@ -218,11 +250,31 @@ const fetchOrders = async () => {
         lon: riderLon.value
       }
     })
-    orders.value = response.data
-    orders.value.forEach(order => {
-      sliderValue.value[order.id] = 0
-      expandedItems.value[order.id] = falseexpandedNotes.value[order.id] = false
-    })} catch (error) {
+
+    const newOrders = response.data
+    
+    // 更新分页状态
+    hasMore.value = newOrders.length === pageSize
+    if (hasMore.value) {
+      currentPage.value++
+    }
+
+    // 更新订单列表
+    if (isLoadMore) {
+      orders.value = [...orders.value, ...newOrders]
+    } else {
+      orders.value = newOrders
+    }
+
+    // 初始化新订单的状态
+    newOrders.forEach(order => {
+      if (!sliderValue.value[order.id]) {
+        sliderValue.value[order.id] = 0
+      }
+      expandedItems.value[order.id] = false
+      expandedNotes.value[order.id] = false
+    })
+  } catch (error) {
     message.error('获取订单列表失败')
   } finally {
     loading.value = false
@@ -232,11 +284,19 @@ const fetchOrders = async () => {
 // 新增排序方法
 const setSortField = (field) => {
   sortField.value = field
-  fetchOrders()
+  resetAndFetch()
 }
 
 // 新增筛选方法
 const applyFilters = () => {
+  resetAndFetch()
+}
+
+// 重置分页并重新获取数据
+const resetAndFetch = () => {
+  currentPage.value = 1
+  hasMore.value = true
+  orders.value = []
   fetchOrders()
 }
 // 切换展开状态
@@ -318,6 +378,10 @@ const formatPhone = (phone) => {
 
 // 显示地图模态框
 const showMap = (order) => {
+  if (!riderLat.value || !riderLon.value) {
+    message.warning('请先设置骑手位置')
+    return
+  }
   selectedOrder.value = order
   showMapModalFlag.value = true
 }
@@ -337,8 +401,13 @@ const completeDelivery = async (order) => {
   }
 }
 
+// 监听标签页切换
+watch(activeTab, () => {
+  resetAndFetch()
+})
+
 onMounted(() => {
-  fetchOrders()
+  resetAndFetch()
 })
 </script>
 
@@ -565,5 +634,27 @@ onMounted(() => {
 .filter-sort-container > * {
   flex: 1;
   min-width: 150px;
+}
+
+.check-icon {
+  color: #4caf50;
+}
+
+.loading-more, .no-more {
+  text-align: center;
+  padding: 16px;
+  color: #999;
+  font-size: 14px;
+}
+
+.loading-more {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+
+.no-more {
+  border-top: 1px solid #f0f0f0;
 }
 </style>

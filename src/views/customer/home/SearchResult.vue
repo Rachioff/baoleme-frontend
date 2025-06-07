@@ -1,19 +1,26 @@
 <!-- src/views/customer/search/SearchResult.vue -->
 <template>
   <div class="search-result-container">
-    <!-- 搜索头部 -->
-    <div class="search-header">
+  <!-- 搜索头部 -->
+  <div class="search-header">
+    <div class="header-row">
       <n-button quaternary circle @click="router.back()">
         <n-icon size="18"><arrow-left-outlined /></n-icon>
       </n-button>
-      <div class="search-input-wrapper" @click="router.push('/search')">
-        <n-input
-          v-model:value="searchText"
-          placeholder="搜索商家、美食"
-          readonly
-        />
+      <div class="location-selector" @click="openLocationPicker">
+        <n-icon size="18"><environment-filled /></n-icon>
+        <span>{{ currentLocation }}</span>
+        <n-icon size="12"><down-outlined /></n-icon>
       </div>
     </div>
+    <div class="search-input-wrapper" @click="router.push('/customer/search')">
+      <n-input
+        v-model:value="searchText"
+        placeholder="搜索商家、美食"
+        readonly
+      />
+    </div>
+  </div>
 
     <!-- 搜索过滤器 -->
     <div class="search-filters">
@@ -30,14 +37,39 @@
           </n-button>
         </n-dropdown>
         
-        <n-dropdown :options="filterOptions" @select="handleFilterChange">
-          <n-button quaternary size="small">
-            筛选
-            <n-icon size="tiny"><filter-outlined /></n-icon>
-          </n-button>
-        </n-dropdown>
+        <n-button quaternary size="small" @click="showFilterModal = true">
+          筛选
+          <n-icon size="tiny"><filter-outlined /></n-icon>
+        </n-button>
       </div>
     </div>
+
+    <!-- 筛选弹窗 -->
+    <n-modal v-model:show="showFilterModal" preset="card" title="筛选选项">
+      <n-form :model="filterForm" label-placement="left" label-width="auto" require-mark-placement="right-hanging">
+        <n-form-item label="最低评分">
+          <n-input-number v-model:value="filterForm.minRating" :min="0" :max="5" :step="0.1" />
+        </n-form-item>
+        <n-form-item v-if="searchType === 'product'" label="价格范围">
+          <n-input-group>
+            <n-input-number v-model:value="filterForm.minPrice" placeholder="最低价格" />
+            <n-input-number v-model:value="filterForm.maxPrice" placeholder="最高价格" />
+          </n-input-group>
+        </n-form-item>
+        <n-form-item v-if="searchType === 'shop'" label="最大距离(km)">
+          <n-input-number v-model:value="filterForm.maxDistance" :min="0" :step="0.1" />
+        </n-form-item>
+        <n-form-item v-if="searchType === 'shop'" label="最长配送时间(分钟)">
+          <n-input-number v-model:value="filterForm.maxDeliveryTime" :min="0" :step="1" />
+        </n-form-item>
+      </n-form>
+        <template #footer>
+      <div style="display: flex; justify-content: space-between; padding-top: 16px;">
+        <n-button type="primary" @click="applyFilters">确定</n-button>
+      </div>
+    </template>
+    </n-modal>
+
 
     <!-- 搜索结果 -->
     <div class="search-result">
@@ -174,29 +206,137 @@
         </div>
       </template>
     </div>
+    <!-- 位置选择模态框 -->
+    <n-modal
+      v-model:show="showLocationPicker"
+      preset="card"
+      title="选择收货地址"
+      style="width: 90%; max-width: 500px;"
+      :bordered="false"
+      :segmented="{ content: true }"
+    >
+      <div class="location-list">
+        <!-- 当前定位 -->
+        <div class="location-header">
+          <n-icon size="18"><environment-filled /></n-icon>
+          <span>当前定位</span>
+        </div>
+        <div class="current-location-item" @click="selectAddress({
+          id: 'current',
+          name: '北京航空航天大学-学生宿舍区',
+          address: '北京市海淀区学院路37号',
+          province: '北京市',
+          city: '北京市',
+          district: '海淀区',
+          isDefault: false,
+          tel: '13888888888',
+          coordinate: [116.397428, 39.908569],
+        })">
+          <div class="location-name">北京航空航天大学-学生宿舍区</div>
+          <div class="location-address">北京市海淀区学院路37号</div>
+        </div>
+        
+        <!-- 收货地址列表 -->
+        <div class="location-header">
+          <n-icon size="18"><pushpin-filled /></n-icon>
+          <span>收货地址</span>
+        </div>
+        <div 
+          v-for="address in addressList" 
+          :key="address.id"
+          class="address-item"
+          @click="selectAddress(address)"
+        >
+          <div class="address-info">
+            <div class="address-name">{{ address.name }}</div>
+            <div class="address-detail">{{ address.address }}</div>
+          </div>
+          <n-tag v-if="address.isDefault" size="small" type="success">默认</n-tag>
+          <n-icon v-if="currentLocation === `${address.province}${address.city}${address.district}${address.address}`" size="16" class="check-icon">
+            <check-circle-filled />
+          </n-icon>
+        </div>
+      </div>
+    </n-modal>
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, watch, computed,reactive } from 'vue'
+import { ref, onMounted, watch, reactive } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
-import { ArrowLeftOutlined, DownOutlined, FilterOutlined } from '@vicons/antd'
-import { getRecommendedProducts } from '@/api/product'
-import { getRecommendedShops } from '@/api/shop'
-import type { Product } from '@/types/product'
-import type { Shop } from '@/types/shop'
+import { 
+  ArrowLeftOutlined, 
+  DownOutlined, 
+  FilterOutlined, 
+  EnvironmentOutlined,
+  EnvironmentFilled,
+  PushpinFilled,
+  CheckCircleFilled
+} from '@vicons/antd'
+import { getRecommendedItems } from '@/api/recommend'
+import { getRecommendedShops } from '@/api/recommend'
+import { getAddresses } from '@/api/address'
+import type { RecommendedProduct, RecommendedShop } from '@/types/recommend'
+import type { Address } from '@/types/address'
+import InfiniteScrollList from '@/components/common/InfiniteScrollList.vue'
 
 const router = useRouter()
 const route = useRoute()
-const searchText = ref('')
+const searchText = ref(route.query.keyword as string || '')
 const loading = ref(false)
 const searchType = ref<'product' | 'shop'>('product')
-
+const showFilterModal = ref(false)
+const filterForm = reactive({
+  category: null,
+  minRating: null,
+  minPrice: null,
+  maxPrice: null,
+  maxDistance: null,
+  maxDeliveryTime: null,
+  addressId: null,
+})
 // 结果列表
-const productResults = ref<Product[]>([])
-const shopResults = ref<Shop[]>([])
-const recommendedProducts = ref<Product[]>([])
-const recommendedShops = ref<Shop[]>([])
+const productResults = ref<RecommendedProduct[]>([])
+const shopResults = ref<RecommendedShop[]>([])
+const recommendedProducts = ref<RecommendedProduct[]>([])
+const recommendedShops = ref<RecommendedShop[]>([])
+const showLocationPicker = ref(false)
+const addressList = ref<Address[]>([])
+
+// 分页相关
+const isProductListFinished = ref(false)
+const isShopListFinished = ref(false)
+const pageSize = 20
+
+// 获取地址列表
+const loadAddresses = async () => {
+  try {
+    addressList.value = await getAddresses()
+  } catch (error) {
+    console.error('获取地址列表失败:', error)
+  }
+}
+
+// 选择地址
+const selectAddress = (address: Address) => {
+  currentLocation.value = `${address.address}`
+  showLocationPicker.value = false
+  // 重新搜索
+  searchContent()
+}
+
+// 打开地址选择器
+const openLocationPicker = () => {
+  loadAddresses()
+  showLocationPicker.value = true
+}
+
+// 分页参数
+const pagination = reactive({
+  page: 1,
+  pageSize: 20,
+  total: 0
+})
 
 // 过滤和排序选项
 const sortOption = ref<string>('default')
@@ -204,119 +344,14 @@ const minPrice = ref<number | null>(null)
 const maxPrice = ref<number | null>(null)
 const minRating = ref<number | null>(null)
 const categories = ref<string[]>([])
-
+const currentLocation = ref('北京航空航天大学-学生宿舍区')
 const sortOptions = [
-  {
-    label: '默认排序',
-    key: 'default'
-  },
-  {
-    label: '销量优先',
-    key: 'sale'
-  },
-  {
-    label: '评分优先',
-    key: 'rating'
-  },
-  {
-    label: '价格从低到高',
-    key: 'price_asc'
-  },
-  {
-    label: '价格从高到低',
-    key: 'price_desc'
-  }
+  { label: '默认排序', key: 'default' },
+  { label: '销量优先', key: 'sale' },
+  { label: '评分优先', key: 'rating' },
+  { label: '价格从低到高', key: 'price_asc' },
+  { label: '价格从高到低', key: 'price_desc' }
 ]
-
-const filterOptions = [
-  {
-    label: '价格区间',
-    key: 'price',
-    children: [
-      {
-        label: '全部',
-        key: 'all'
-      },
-      {
-        label: '¥0-20',
-        key: '0-20'
-      },
-      {
-        label: '¥20-40',
-        key: '20-40'
-      },
-      {
-        label: '¥40-60',
-        key: '40-60'
-      },
-      {
-        label: '¥60以上',
-        key: '60+'
-      }
-    ]
-  },
-  {
-    label: '评分',
-    key: 'rating',
-    children: [
-      {
-        label: '全部',
-        key: '0'
-      },
-      {
-        label: '4.5分以上',
-        key: '4.5'
-      },
-      {
-        label: '4分以上',
-        key: '4'
-      },
-      {
-        label: '3.5分以上',
-        key: '3.5'
-      }
-    ]
-  }
-]
-
-// 获取当前排序方式的标签
-const getCurrentSortLabel = () => {
-  const option = sortOptions.find(option => option.key === sortOption.value)
-  return option ? option.label : '默认排序'
-}
-
-// 处理排序变更
-const handleSortChange = (key: string) => {
-  sortOption.value = key
-  searchProducts()
-}
-
-// 处理筛选变更
-const handleFilterChange = (key: string) => {
-  if (key === 'all') {
-    minPrice.value = null
-    maxPrice.value = null
-  } else if (key === '0-20') {
-    minPrice.value = 0
-    maxPrice.value = 20
-  } else if (key === '20-40') {
-    minPrice.value = 20
-    maxPrice.value = 40
-  } else if (key === '40-60') {
-    minPrice.value = 40
-    maxPrice.value = 60
-  } else if (key === '60+') {
-    minPrice.value = 60
-    maxPrice.value = null
-  } else if (key === '0') {
-    minRating.value = null
-  } else {
-    minRating.value = parseFloat(key)
-  }
-  
-  searchProducts()
-}
-
 // 格式化距离
 const formatDistance = (distance: number) => {
   if (!distance) return '未知距离'
@@ -331,71 +366,77 @@ const formatTime = (time: number) => {
   if (!time) return '未知时间'
   return `${time}分钟`
 }
+// 处理排序变更
+const handleSortChange = (key: string) => {
+  sortOption.value = key
+  searchContent()
+}
+
+// 应用筛选条件
+const applyFilters = () => {
+  showFilterModal.value = false
+  searchContent()
+}
+// 获取当前排序方式的标签
+const getCurrentSortLabel = () => {
+  const option = sortOptions.find(option => option.key === sortOption.value)
+  return option ? option.label : '默认排序'
+}
 
 // 处理商品点击
-const handleProductClick = (product: Product) => {
-  router.push(`/store/${product.shopId}?product=${product.id}`)
+const handleProductClick = (product: RecommendedProduct) => {
+  router.push(`/customer/shops/${product.shopId}?product=${product.id}`)
 }
-
+// 选择位置
+const selectLocation = (location: string) => {
+  currentLocation.value = location
+  showLocationPicker.value = false
+}
 // 处理店铺点击
-const handleShopClick = (shop: Shop) => {
-  router.push(`/store/${shop.id}`)
+const handleShopClick = (shop: RecommendedShop) => {
+  router.push(`/customer/shops/${shop.id}`)
 }
 
-// 搜索API - 商品
-const searchProducts = async () => {
+//搜索内容
+const searchContent = async () => {
   loading.value = true
+  // 重置分页状态
+  isProductListFinished.value = false
+  isShopListFinished.value = false
+  productResults.value = []
+  shopResults.value = []
+  
   try {
-    const params: Record<string, any> = {
-      q: encodeURIComponent(searchText.value.trim()) ,
-      page: pagination.page,
-      page_size: pagination.pageSize
+    const params: any = {
+      q: searchText.value.trim(),
+      p: 1,
+      pn: pageSize,
+      s: sortOption.value !== 'default' ? sortOption.value : undefined,
+      c: filterForm.category,
+      r: filterForm.minRating,
+      a: filterForm.addressId,
     }
-    
-    // 添加排序和筛选参数
-    if (sortOption.value !== 'default') {
-      params.s = sortOption.value
-    }
-    
-    if (minPrice.value !== null) {
-      params.min_p = minPrice.value
-    }
-    
-    if (maxPrice.value !== null) {
-      params.max_p = maxPrice.value
-    }
-    
-    if (minRating.value !== null) {
-      params.r = minRating.value
-    }
-    
-    if (categories.value.length > 0) {
-      params.c = categories.value
-    }
-    
     if (searchType.value === 'product') {
-      const data = await getRecommendedProducts(params)
+      if (filterForm.minPrice !== null) params.min_p = filterForm.minPrice
+      if (filterForm.maxPrice !== null) params.max_p = filterForm.maxPrice
+      const data = await getRecommendedItems(params)
       productResults.value = data
+      isProductListFinished.value = data.length < pageSize
       
-      // 如果没有结果，获取推荐商品
       if (data.length === 0 && !params.q) {
-        recommendedProducts.value = await getRecommendedProducts({
-          pn: 10
-        })
+        recommendedProducts.value = await getRecommendedItems({ pn: 10 })
       }
     } else {
-      const data = await getRecommendedShops({
-        ...params,
-        rc: 3 // 获取3个推荐商品
-      })
-      shopResults.value = data
+      if (filterForm.maxDistance !== null) params.d = filterForm.maxDistance
+      if (filterForm.maxDeliveryTime !== null) params.t = filterForm.maxDeliveryTime
+      params.rc = 3 // 获取3个推荐商品
       
-      // 如果没有结果，获取推荐店铺
+      const data = await getRecommendedShops(params)
+      shopResults.value = data
+      isShopListFinished.value = data.length < pageSize
+      
       if (data.length === 0 && !params.q) {
-        recommendedShops.value = await getRecommendedShops({
-          pn: 5,
-          rc: 3
-        })
+        recommendedShops.value = await getRecommendedShops({ pn: 5, rc: 3 })
       }
     }
   } catch (error) {
@@ -404,47 +445,80 @@ const searchProducts = async () => {
     loading.value = false
   }
 }
-const pagination = reactive({
-  page: 1,
-  pageSize: 20,
-  total: 0
-})
 
-// 监听滚动加载更多
-const handleScroll = () => {
-  if (window.innerHeight + window.scrollY >= document.body.offsetHeight - 200) {
-    if (!loading.value && pagination.page * pagination.pageSize < pagination.total) {
-      pagination.page++
-      searchProducts()
+// 加载更多
+const loadMore = async () => {
+  if (loading.value) return
+
+  const currentPage = Math.floor(
+    (searchType.value === 'product' ? productResults.value.length : shopResults.value.length) / pageSize
+  ) + 1
+
+  try {
+    loading.value = true
+    const params: any = {
+      q: searchText.value.trim(),
+      p: currentPage,
+      pn: pageSize,
+      s: sortOption.value !== 'default' ? sortOption.value : undefined,
+      c: filterForm.category,
+      r: filterForm.minRating,
+      a: filterForm.addressId,
     }
+
+    if (searchType.value === 'product') {
+      if (filterForm.minPrice !== null) params.min_p = filterForm.minPrice
+      if (filterForm.maxPrice !== null) params.max_p = filterForm.maxPrice
+      const data = await getRecommendedItems(params)
+      productResults.value = [...productResults.value, ...data]
+      isProductListFinished.value = data.length < pageSize
+    } else {
+      if (filterForm.maxDistance !== null) params.d = filterForm.maxDistance
+      if (filterForm.maxDeliveryTime !== null) params.t = filterForm.maxDeliveryTime
+      params.rc = 3 // 获取3个推荐商品
+      
+      const data = await getRecommendedShops(params)
+      shopResults.value = [...shopResults.value, ...data]
+      isShopListFinished.value = data.length < pageSize
+    }
+  } catch (error) {
+    console.error('加载更多失败:', error)
+  } finally {
+    loading.value = false
   }
 }
+
 // 监听路由参数变化
 watch(
   () => route.query.keyword,
   (newKeyword) => {
     if (newKeyword) {
       searchText.value = newKeyword as string
-      searchProducts()
+      searchContent()
     }
   },
   { immediate: true }
 )
 
 // 监听搜索类型变化
-watch(searchType, (newVal) => {
-  // 重置筛选条件
+watch(searchType, () => {
+  // 重置筛选条件和分页状态
   sortOption.value = 'default'
   minPrice.value = null
   maxPrice.value = null
   minRating.value = null
   categories.value = []
-  searchProducts()
+  isProductListFinished.value = false
+  isShopListFinished.value = false
+  productResults.value = []
+  shopResults.value = []
+  searchContent()
 })
 
 // 组件挂载时获取初始数据
-onMounted(() => {
-  searchProducts()
+onMounted(async () => {
+  await loadAddresses() // 加载地址列表
+  searchContent()
 })
 </script>
 
@@ -456,11 +530,40 @@ onMounted(() => {
 
 .search-header {
   display: flex;
-  align-items: center;
+  align-items: column;
   padding: 12px 16px;
   background-color: #fff;
 }
 
+.header-row {
+  display: flex;
+  align-items: center;
+  margin-bottom: 12px;
+}
+
+.location-selector {
+  display: flex;
+  align-items: center;
+  font-size: 14px;
+  color: #333;
+  cursor: pointer;
+  margin-left: 12px;
+}
+
+.location-selector .n-icon {
+  margin-right: 4px;
+}
+
+.location-selector span {
+  max-width: 200px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.search-input-wrapper {
+  width: 100%;
+}
 .search-input-wrapper {
   flex: 1;
   display: flex;
@@ -570,6 +673,7 @@ onMounted(() => {
   overflow: hidden;
   text-overflow: ellipsis;
   display: -webkit-box;
+  line-clamp: 2;
   -webkit-line-clamp: 2;
   -webkit-box-orient: vertical;
 }
@@ -637,5 +741,76 @@ onMounted(() => {
   font-size: 12px;
   padding: 2px 4px;
   text-align: center;
+}
+
+.location-list {
+  max-height: 400px;
+  overflow-y: auto;
+}
+
+.location-header {
+  display: flex;
+  align-items: center;
+  padding: 12px 16px;
+  background-color: #f9f9f9;
+  border-bottom: 1px solid #f0f0f0;
+  font-size: 14px;
+  color: #333;
+}
+
+.current-location-item {
+  display: flex;
+  flex-direction: column;
+  padding: 12px 16px;
+  background-color: #fff;
+  border-radius: 8px;
+  margin: 8px 16px;
+  cursor: pointer;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+}
+
+.location-name {
+  font-size: 16px;
+  font-weight: bold;
+  color: #333;
+}
+
+.location-address {
+  font-size: 14px;
+  color: #666;
+  margin-top: 4px;
+}
+
+.address-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px 16px;
+  border-bottom: 1px solid #f0f0f0;
+  cursor: pointer;
+}
+
+.address-item:last-child {
+  border-bottom: none;
+}
+
+.address-info {
+  flex: 1;
+}
+
+.address-name {
+  font-size: 14px;
+  font-weight: bold;
+  color: #333;
+}
+
+.address-detail {
+  font-size: 12px;
+  color: #666;
+  margin-top: 4px;
+}
+
+.check-icon {
+  color: #4caf50;
 }
 </style>

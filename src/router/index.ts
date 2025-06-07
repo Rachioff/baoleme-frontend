@@ -247,6 +247,23 @@ const routes: Array<RouteRecordRaw> = [
     component: () => import('@/views/admin/OrderManagement.vue'),
     meta: { requiresAuth: true, role: 'admin' }
   },
+  // 搜索页面
+  {
+    path: '/customer/search',
+    name: 'Search',
+    component: () => import('@/views/customer/home/Search.vue')
+  },
+  {
+    path: '/customer/search/result',
+    name: 'SearchResult',
+    component: () => import('@/views/customer/home/SearchResult.vue')
+  },
+  // 配送地图
+  {
+    path: '/order/delivery-map',
+    name: 'DeliveryMap',
+    component: () => import('@/views/DeliveryMap.vue')
+  },
 ]
 
 const router = createRouter({

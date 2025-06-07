@@ -1,9 +1,9 @@
-<!-- src/views/customer/search/Search.vue -->
+<!-- src/views/customer/home/Search.vue -->
 <template>
   <div class="search-container">
     <!-- 搜索头部 -->
     <div class="search-header">
-      <n-button quaternary circle @click="router.back()">
+      <n-button quaternary circle @click="router.push('/customer/home')">
         <n-icon size="18"><arrow-left-outlined /></n-icon>
       </n-button>
       <div class="search-input-wrapper">
@@ -17,7 +17,9 @@
         />
         <n-button
           class="search-button"
+          type="primary"
           @click="handleSearch"
+          :loading="isSearching"
         >
           搜索
         </n-button>
@@ -88,9 +90,10 @@ import { ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { DeleteOutlined, ArrowLeftOutlined } from '@vicons/antd'
 import { NInput } from 'naive-ui'
-import { getRecommendedProducts } from '@/api/product'
-import { getRecommendedShops } from '@/api/shop'
+import { getRecommendedItems } from '@/api/recommend'
+import { getRecommendedShops } from '@/api/recommend'
 
+// 搜索建议项类型定义
 interface SuggestionItem {
   id: string
   name: string
@@ -102,6 +105,7 @@ const searchText = ref('')
 const searchInput = ref<InstanceType<typeof NInput> | null>(null)
 const searchHistory = ref<string[]>([])
 const suggestions = ref<SuggestionItem[]>([])
+const isSearching = ref(false)
 const hotSearches = ref<string[]>([
   '北京烤鸭',
   '麻辣香锅',
@@ -116,75 +120,88 @@ const hotSearches = ref<string[]>([
 // 加载热门搜索词
 const loadHotSearches = async () => {
   try {
-    //暂时使用静态数据
+    // TODO: 接入热门搜索API
   } catch (error) {
     console.error('获取热门搜索失败', error)
   }
 }
 
+// 处理搜索建议
+const handleInput = async () => {
+  if (!searchText.value.trim()) {
+    suggestions.value = []
+    return
+  }
+
+  try {
+    const [products, shops] = await Promise.all([
+      getRecommendedItems({ 
+        q: searchText.value.trim(), 
+        pn: 5 
+      }),
+      getRecommendedShops({ 
+        q: searchText.value.trim(), 
+        pn: 5,
+        rc: 0 // 不需要推荐商品
+      })
+    ])
+
+    // 转换为建议格式
+    const productSuggestions: SuggestionItem[] = products.map(product => ({
+      id: product.id,
+      name: product.name,
+      type: 'product'
+    }))
+
+    const shopSuggestions: SuggestionItem[] = shops.map(shop => ({
+      id: shop.id,
+      name: shop.name,
+      type: 'shop'
+    }))
+
+    // 合并两种类型的建议
+    suggestions.value = []
+    const maxLength = Math.max(productSuggestions.length, shopSuggestions.length)
+    for (let i = 0; i < maxLength; i++) {
+      if (i < productSuggestions.length) {
+        suggestions.value.push(productSuggestions[i])
+      }
+      if (i < shopSuggestions.length) {
+        suggestions.value.push(shopSuggestions[i])
+      }
+    }
+
+    // 限制建议数量
+    suggestions.value = suggestions.value.slice(0, 10)
+  } catch (error) {
+    console.error('获取搜索建议失败:', error)
+    suggestions.value = []
+  }
+}
+
 // 处理搜索
-const handleSearch = () => {
-  if (!searchText.value.trim()) return
+const handleSearch = async () => {
+  const trimmedText = searchText.value.trim()
+  if (!trimmedText) return
   
   // 保存搜索历史
-  if (!searchHistory.value.includes(searchText.value)) {
-    searchHistory.value.unshift(searchText.value)
+  if (!searchHistory.value.includes(trimmedText)) {
+    searchHistory.value.unshift(trimmedText)
     if (searchHistory.value.length > 10) {
       searchHistory.value.pop()
     }
     localStorage.setItem('searchHistory', JSON.stringify(searchHistory.value))
   }
   
-  // 跳转到搜索结果页
-  router.push({
-    path: '/search/result',
-    query: { keyword: searchText.value }
-  })
-}
-
-// 处理输入，获取搜索建议
-const handleInput = async () => {
-  if (searchText.value.trim()) {
-    try {
-      // 同时搜索商品和店铺
-      const [products, shops] = await Promise.all([
-        getRecommendedProducts({ q: searchText.value, pn: 5 }),
-        getRecommendedShops({ q: searchText.value, pn: 5 })
-      ])
-      
-      // 合并结果并转换为建议格式
-      const productSuggestions = products.map(p => ({
-        id: p.id,
-        name: p.name,
-        type: 'product' as const
-      }))
-      
-      const shopSuggestions = shops.map(s => ({
-        id: s.id,
-        name: s.name,
-        type: 'shop' as const
-      }))
-      
-      // 合并两种类型的建议，按照顺序交替显示
-      suggestions.value = []
-      const maxLength = Math.max(productSuggestions.length, shopSuggestions.length)
-      for (let i = 0; i < maxLength; i++) {
-        if (i < productSuggestions.length) {
-          suggestions.value.push(productSuggestions[i])
-        }
-        if (i < shopSuggestions.length) {
-          suggestions.value.push(shopSuggestions[i])
-        }
-      }
-      
-      // 限制建议数量
-      suggestions.value = suggestions.value.slice(0, 10)
-    } catch (error) {
-      console.error('获取搜索建议失败', error)
-      suggestions.value = []
-    }
-  } else {
-    suggestions.value = []
+  isSearching.value = true
+  try {
+    // 跳转到搜索结果页
+    router.push({
+      path: '/customer/search/result',
+      query: { keyword: trimmedText }
+    })
+  } finally {
+    isSearching.value = false
   }
 }
 

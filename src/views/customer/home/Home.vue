@@ -12,7 +12,7 @@
           <n-icon size="12"><down-outlined /></n-icon>
         </div>
       </n-space>
-            <div class="search-input-wrapper" @click="router.push('/search')">
+      <div class="search-input-wrapper" @click="router.push('/customer/search')">
         <n-icon size="16"><search-outlined /></n-icon>
         <n-input
           placeholder="搜索商家、美食"
@@ -20,7 +20,7 @@
         />
         <n-button
           class="search-button"
-          @click.stop="router.push('/search')"
+          @click.stop="router.push('/customer/search')"
         >
           搜索
         </n-button>
