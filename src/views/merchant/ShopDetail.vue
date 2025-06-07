@@ -109,6 +109,13 @@
                     {{ shop.address.coordinate[0] }}, {{ shop.address.coordinate[1] }}
                 </n-descriptions-item>
                 </n-descriptions>
+                <div style="margin-top: 16px">
+                <div
+                    v-if="shop.address.coordinate[0] !== null && shop.address.coordinate[1] !== null"
+                    id="shop-map-container"
+                    style="height: 260px; width: 100%; border-radius: 8px; overflow: hidden;"
+                ></div>
+                </div>
             </n-card>
             </n-gi>
         </n-grid>
@@ -118,7 +125,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, computed, watch } from 'vue'
+import { ref, onMounted, computed, watch, nextTick } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import {
     NPageHeader, NSpace, NButton, NIcon, NAvatar, NCard, NDescriptions,
@@ -130,6 +137,7 @@ import {
     // ArrowBackOutline // n-page-header自带返回
 } from '@vicons/ionicons5'
 import { getShopInfo, getShopCategories } from '@/api/shop'
+import AMapLoader from '@amap/amap-jsapi-loader';
 
 // --- 复用 ShopEditForm.vue 中的数据模型定义 ---
 interface 地址 {
@@ -257,15 +265,52 @@ const formatCategory = (categoryKey: string): string => {
     return categoryMap.value[categoryKey] || categoryKey;
 }
 
+let map: any = null;
+let AMap: any = null;
 
-onMounted(() => {
-    fetchCategories();
-    if (shopId.value) {
-        fetchShopDetails(shopId.value);
-    } else {
-        message.error('无效的店铺ID');
-        isLoading.value = false;
+function renderShopMap() {
+  if (!shop.value || shop.value.address.coordinate[0] == null || shop.value.address.coordinate[1] == null) return;
+  const lng = shop.value.address.coordinate[0];
+  const lat = shop.value.address.coordinate[1];
+  if (!AMap) return;
+  if (map) {
+    map.destroy();
+    map = null;
+  }
+  map = new AMap.Map('shop-map-container', {
+    viewMode: '3D',
+    zoom: 16,
+    center: [lng, lat],
+  });
+  const marker = new AMap.Marker({
+    position: [lng, lat],
+    anchor: 'bottom-center',
+  });
+  map.add(marker);
+}
+
+onMounted(async () => {
+  fetchCategories();
+  if (shopId.value) {
+      fetchShopDetails(shopId.value);
+  } else {
+      message.error('无效的店铺ID');
+      isLoading.value = false;
+  }
+
+  // 加载高德地图API
+  AMap = await AMapLoader.load({
+    key: import.meta.env.VITE_AMAP_KEY,
+    version: '2.0',
+    plugins: ['AMap.Scale'],
+  });
+  // 地图渲染需等DOM ready
+  watch(shop, async (val) => {
+    if (val && val.address.coordinate[0] !== null && val.address.coordinate[1] !== null) {
+      await nextTick();
+      renderShopMap();
     }
+  }, { immediate: true });
 });
 
 // 监听路由参数变化，如果 shopId 变了，重新加载数据

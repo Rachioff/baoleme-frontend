@@ -1,182 +1,189 @@
 <template>
-    <div class="shop-edit-form-page">
+  <div class="shop-edit-form-page">
     <n-page-header :title="pageTitle" @back="handleCancel">
-        <template #extra>
+      <template #extra>
         <n-space>
-            <n-button @click="handleCancel">取消</n-button>
-            <n-button type="primary" @click="handleSave" :loading="isSaving">保存更改</n-button>
+          <n-button @click="handleCancel">取消</n-button>
+          <n-button type="primary" @click="handleSave" :loading="isSaving">保存更改</n-button>
         </n-space>
-        </template>
+      </template>
     </n-page-header>
-
     <div v-if="isLoading" class="loading-container">
-        <n-spin size="large" />
-        <p>正在加载店铺数据...</p>
+      <n-spin size="large" />
+      <p>正在加载店铺数据...</p>
     </div>
-
     <n-card v-else-if="formData" class="form-card" :bordered="false">
-        <n-form
+      <n-form
         ref="formRef"
         :model="formData"
         :rules="formRules"
         label-placement="top"
         label-width="auto"
-        >
+      >
         <n-grid :x-gap="24" :y-gap="16" cols="1 s:1 m:2 l:3" responsive="screen">
-            <n-form-item-gi :span="3" label="店铺名称" path="name">
+          <n-form-item-gi :span="3" label="店铺名称" path="name">
             <n-input v-model:value="formData.name" placeholder="请输入店铺名称" />
-            </n-form-item-gi>
+          </n-form-item-gi>
 
-            <n-form-item-gi :span="3" label="店铺简介" path="description">
+          <n-form-item-gi :span="3" label="店铺简介" path="description">
             <n-input
-                v-model:value="formData.description"
-                type="textarea"
-                placeholder="请输入店铺简介（可选）"
-                :autosize="{ minRows: 3, maxRows: 5 }"
+              v-model:value="formData.description"
+              type="textarea"
+              placeholder="请输入店铺简介（可选）"
+              :autosize="{ minRows: 3, maxRows: 5 }"
             />
-            </n-form-item-gi>
+          </n-form-item-gi>
 
-            <n-form-item-gi :span="3" label="店铺头像（支持 PNG, JPG, GIF, WEBP 格式）" path="avatarFile">
+          <n-form-item-gi :span="3" label="店铺头像（支持 PNG, JPG, GIF, WEBP 格式）" path="avatarFile">
             <n-upload
-                v-model:file-list="avatarFileList"
-                list-type="image-card"
-                :max="1"
-                accept="image/png, image/jpeg, image/gif, image/webp"
-                :custom-request="handleCustomAvatarRequest"
-                @change="handleAvatarChange"
-                @remove="handleAvatarRemove"
+              v-model:file-list="avatarFileList"
+              list-type="image-card"
+              :max="1"
+              accept="image/png, image/jpeg, image/gif, image/webp"
+              :custom-request="handleCustomAvatarRequest"
+              @change="handleAvatarChange"
+              @remove="handleAvatarRemove"
             >
-                <n-upload-dragger>
+              <n-upload-dragger>
                 <div style="margin-bottom: 12px">
-                    <n-icon size="48" :depth="3" :component="CloudUploadOutline" />
+                  <n-icon size="48" :depth="3" :component="CloudUploadOutline" />
                 </div>
                 <n-p depth="3" style="margin: 8px 0 0 0">
                 </n-p>
-                </n-upload-dragger>
+              </n-upload-dragger>
             </n-upload>
-            </n-form-item-gi>
+          </n-form-item-gi>
 
-            <n-form-item-gi label="开业状态" path="opened">
+          <n-form-item-gi label="开业状态" path="opened">
             <n-switch v-model:value="formData.opened">
-                <template #checked>营业中</template>
-                <template #unchecked>休息中</template>
+              <template #checked>营业中</template>
+              <template #unchecked>休息中</template>
             </n-switch>
-            </n-form-item-gi>
+          </n-form-item-gi>
 
-            <n-form-item-gi label="认证状态 (管理员审核)" path="verified">
+          <n-form-item-gi label="认证状态 (管理员审核)" path="verified">
             <n-tag :type="formData.verified ? 'success' : 'warning'" round>
-                {{ formData.verified ? '已认证' : '未认证' }}
+              {{ formData.verified ? '已认证' : '未认证' }}
             </n-tag>
-            </n-form-item-gi>
-            <n-gi :span="1" />
+          </n-form-item-gi>
+          <n-gi :span="1" />
 
-            <n-form-item-gi label="营业开始时间" path="openTimeStart">
+          <n-form-item-gi label="营业开始时间" path="openTimeStart">
             <n-time-picker
-                v-model:formatted-value="openTimeDisplay"
-                value-format="HH:mm"
-                format="HH:mm"
-                placeholder="选择开始时间"
-                style="width: 100%;"
+              v-model:formatted-value="openTimeDisplay"
+              value-format="HH:mm"
+              format="HH:mm"
+              placeholder="选择开始时间"
+              style="width: 100%;"
             />
-            </n-form-item-gi>
+          </n-form-item-gi>
 
-            <n-form-item-gi label="营业结束时间" path="openTimeEnd">
+          <n-form-item-gi label="营业结束时间" path="openTimeEnd">
             <n-time-picker
-                v-model:formatted-value="closeTimeDisplay"
-                value-format="HH:mm"
-                format="HH:mm"
-                placeholder="选择结束时间"
-                style="width: 100%;"
+              v-model:formatted-value="closeTimeDisplay"
+              value-format="HH:mm"
+              format="HH:mm"
+              placeholder="选择结束时间"
+              style="width: 100%;"
             />
-            </n-form-item-gi>
-            <n-gi :span="1" />
+          </n-form-item-gi>
+          <n-gi :span="1" />
 
-            <n-form-item-gi label="配送费用 (元)" path="deliveryPrice">
-              <n-input-number v-model:value="formData.deliveryPrice" :min="0" :precision="2" placeholder="例如: 5.00" style="width: 100%;" />
-            </n-form-item-gi>
+          <n-form-item-gi label="配送费用 (元)" path="deliveryPrice">
+            <n-input-number v-model:value="formData.deliveryPrice" :min="0" :precision="2" placeholder="例如: 5.00" style="width: 100%;" />
+          </n-form-item-gi>
 
-            <n-form-item-gi label="起送价格 (元)" path="deliveryThreshold">
-              <n-input-number v-model:value="formData.deliveryThreshold" :min="0" :precision="2" placeholder="例如: 20.00" style="width: 100%;" />
-            </n-form-item-gi>
+          <n-form-item-gi label="起送价格 (元)" path="deliveryThreshold">
+            <n-input-number v-model:value="formData.deliveryThreshold" :min="0" :precision="2" placeholder="例如: 20.00" style="width: 100%;" />
+          </n-form-item-gi>
 
-            <n-form-item-gi label="最远配送距离 (公里)" path="maximumDistance">
+          <n-form-item-gi label="最远配送距离 (公里)" path="maximumDistance">
             <n-input-number v-model:value="formData.maximumDistance" :min="0" :precision="1" placeholder="例如: 5.0" style="width: 100%;" />
-            </n-form-item-gi>
+          </n-form-item-gi>
 
-            <n-form-item-gi :span="3" label="店铺类型" path="categories">
+          <n-form-item-gi :span="3" label="店铺类型" path="categories">
             <n-select
-                v-model:value="formData.categories"
-                multiple
-                filterable
-                tag
-                placeholder="请选择或输入店铺类型"
-                :options="categoryOptions"
-                :max-tag-count="5"
+              v-model:value="formData.categories"
+              multiple
+              filterable
+              tag
+              placeholder="请选择或输入店铺类型"
+              :options="categoryOptions"
+              :max-tag-count="5"
             />
-            </n-form-item-gi>
+          </n-form-item-gi>
         </n-grid>
 
         <n-divider title-placement="left">店铺地址信息</n-divider>
         <n-grid :x-gap="24" :y-gap="16" cols="1 s:1 m:2 l:3" responsive="screen">
-            <n-form-item-gi label="联系人姓名" path="address.name">
-                <n-input v-model:value="formData.address.name" placeholder="请输入联系人姓名" />
-            </n-form-item-gi>
-            <n-form-item-gi label="联系人电话" path="address.tel">
-                <n-input v-model:value="formData.address.tel" placeholder="请输入联系人电话" />
-            </n-form-item-gi>
-            <n-gi :span="1" />
+          <n-form-item-gi label="联系人姓名" path="address.name">
+              <n-input v-model:value="formData.address.name" placeholder="请输入联系人姓名" />
+          </n-form-item-gi>
+          <n-form-item-gi label="联系人电话" path="address.tel">
+              <n-input v-model:value="formData.address.tel" placeholder="请输入联系人电话" />
+          </n-form-item-gi>
+          <n-gi :span="1" />
 
 
-            <n-form-item-gi label="省级行政区" path="address.province">
-                <n-input v-model:value="formData.address.province" placeholder="例如：北京市" />
-            </n-form-item-gi>
-            <n-form-item-gi label="地级行政区" path="address.city">
-                <n-input v-model:value="formData.address.city" placeholder="例如：北京市" />
-            </n-form-item-gi>
-            <n-form-item-gi label="县级行政区" path="address.district">
-                <n-input v-model:value="formData.address.district" placeholder="例如：海淀区" />
-            </n-form-item-gi>
-            <n-form-item-gi :span="2" label="详细地址" path="address.address">
-                <n-input v-model:value="formData.address.address" placeholder="请输入街道、楼牌号等" />
-            </n-form-item-gi>
+          <n-form-item-gi label="省级行政区" path="address.province">
+              <n-input v-model:value="formData.address.province" placeholder="例如：北京市" />
+          </n-form-item-gi>
+          <n-form-item-gi label="地级行政区" path="address.city">
+              <n-input v-model:value="formData.address.city" placeholder="例如：北京市" />
+          </n-form-item-gi>
+          <n-form-item-gi label="县级行政区" path="address.district">
+              <n-input v-model:value="formData.address.district" placeholder="例如：海淀区" />
+          </n-form-item-gi>
+          <n-form-item-gi :span="2" label="详细地址" path="address.address">
+            <n-input v-model:value="formData.address.address" placeholder="请输入街道、楼牌号等" />
+            <n-button size="small" style="margin-top: 8px" @click="openAddressSelector">选择地址</n-button>
+          </n-form-item-gi>
 
-            <n-form-item-gi label="经度 (通过定位获取)" path="address.coordinate.0">
-                <n-input-number 
-                  v-model:value="formData.address.coordinate[0]" 
-                  :precision="6" 
-                  placeholder="请点击下方按钮获取" 
-                  style="width: 100%;" 
-                  disabled />
-            </n-form-item-gi>
-            <n-form-item-gi label="纬度 (通过定位获取)" path="address.coordinate.1">
-                <n-input-number 
-                  v-model:value="formData.address.coordinate[1]" 
-                  :precision="6" 
-                  placeholder="请点击下方按钮获取" 
-                  style="width: 100%;" 
-                  disabled />
-            </n-form-item-gi>
-            <n-form-item-gi :span="3" style="display: flex; flex-direction: column; align-items: flex-start;">
-                 <n-button @click="fetchCurrentLocation" :loading="isLocating" type="default" :block="false" style="margin-bottom: 5px;">
-                    <template #icon><n-icon :component="LocateOutline" /></template>
-                    获取店铺当前经纬度
-                </n-button>
-                <n-text v-if="geolocationError" type="error" style="font-size: 12px;">
-                    定位失败: {{ geolocationError.message }}
-                </n-text>
-                <n-text v-else-if="formData.address.coordinate[0] !== null && formData.address.coordinate[1] !== null" :depth="3" style="font-size: 12px;">
-                    已获取坐标。如需更改，请重新定位。
-                </n-text>
-                 <n-text v-else :depth="3" style="font-size: 12px;">
-                    点击按钮获取店铺的精确地理位置。
-                </n-text>
-            </n-form-item-gi>
+          <n-form-item-gi label="经度 (通过定位获取)" path="address.coordinate.0">
+              <n-input-number 
+                v-model:value="formData.address.coordinate[0]" 
+                :precision="6" 
+                placeholder="请点击下方按钮获取" 
+                style="width: 100%;" 
+                disabled />
+          </n-form-item-gi>
+          <n-form-item-gi label="纬度 (通过定位获取)" path="address.coordinate.1">
+              <n-input-number 
+                v-model:value="formData.address.coordinate[1]" 
+                :precision="6" 
+                placeholder="请点击下方按钮获取" 
+                style="width: 100%;" 
+                disabled />
+          </n-form-item-gi>
+          <n-form-item-gi :span="3" style="display: flex; flex-direction: column; align-items: flex-start;">
+               <n-button @click="fetchCurrentLocation" :loading="isLocating" type="default" :block="false" style="margin-bottom: 5px;">
+                  <template #icon><n-icon :component="LocateOutline" /></template>
+                  获取店铺当前经纬度
+              </n-button>
+              <n-text v-if="geolocationError" type="error" style="font-size: 12px;">
+                  定位失败: {{ geolocationError.message }}
+              </n-text>
+              <n-text v-else-if="formData.address.coordinate[0] !== null && formData.address.coordinate[1] !== null" :depth="3" style="font-size: 12px;">
+                  已获取坐标。如需更改，请重新定位。
+              </n-text>
+               <n-text v-else :depth="3" style="font-size: 12px;">
+                  点击按钮获取店铺的精确地理位置。
+              </n-text>
+          </n-form-item-gi>
         </n-grid>
 
-        </n-form>
+      </n-form>
     </n-card>
+    <n-modal v-model:show="showAddressSelector" preset="dialog" title="选择地址" style="width: 600px; max-width: 90vw;">
+      <AddressSelector
+        :latitude="formData?.address.coordinate[1] ?? 0"
+        :longitude="formData?.address.coordinate[0] ?? 0"
+        @select="onAddressSelected"
+        @close="showAddressSelector = false"
+      />
+    </n-modal>
     <n-empty v-else description="无法加载店铺信息进行编辑" style="margin-top: 40px;" />
-    </div>
+  </div>
 </template>
 
 <script setup lang="ts">
@@ -185,12 +192,13 @@ import { useRoute, useRouter } from 'vue-router'
 import {
     NPageHeader, NSpace, NButton, NCard, NForm, NFormItemGi, NInput, NInputNumber,
     NSelect, NSpin, NEmpty, NGrid, NAvatar, NSwitch, NTag, NDivider, NTimePicker, // NTimePicker 添加
-    NUpload, NUploadDragger, NIcon, NP, useMessage,
+    NUpload, NUploadDragger, NIcon, NP, useMessage, NModal,
     type FormInst, type FormRules, type FormItemRule, type UploadFileInfo, type UploadCustomRequestOptions, type SelectOption
 } from 'naive-ui'
 import { CloudUploadOutline, LocateOutline } from '@vicons/ionicons5'
 import { useGeolocation, type GeolocationError } from '@/composables/useGeolocation';
 import { getShopCategories, updateShopProfile, updateShopImages, getShopInfo } from '@/api/shop';
+import AddressSelector from '@/views/AddressSelector.vue'
 
 // --- 数据模型定义 ---
 interface 地址 {
@@ -466,6 +474,33 @@ const handleCancel = () => {
     router.back();
 };
 
+const showAddressSelector = ref(false)
+
+async function openAddressSelector() {
+  if (!formData.value) return;
+  if (formData.value.address.coordinate[0] == null || formData.value.address.coordinate[1] == null) {
+    try {
+      const coords = await getCurrentLocation({ enableHighAccuracy: true, timeout: 10000 });
+      formData.value.address.coordinate = [
+        parseFloat(coords.longitude.toFixed(6)),
+        parseFloat(coords.latitude.toFixed(6))
+      ];
+    } catch (err) {
+      // 定位失败不阻断弹窗
+    }
+  }
+  showAddressSelector.value = true;
+}
+
+function onAddressSelected(province: string, city: string, district: string, address: string, longitude: number, latitude: number) {
+  if (!formData.value) return
+  formData.value.address.province = province
+  formData.value.address.city = city
+  formData.value.address.district = district
+  formData.value.address.address = address
+  formData.value.address.coordinate = [longitude, latitude]
+  showAddressSelector.value = false
+}
 </script>
 
 <style scoped>
