@@ -131,6 +131,10 @@ const routes: Array<RouteRecordRaw> = [
     props: true, // productId 会被传递
     meta: { requiresAuth: true, role: 'merchant' }
   },
+  {path: '/merchant/shop/{id}/comments',
+    name: 'ShopCommentsList',
+    component: () => import('@/views/merchant/shop/ShopCommentList.vue'),
+    meta: { requiresAuth: true, role: 'merchant' }},
   {
     path: '/merchant/products/:productId',
     name: 'MerchantProductDetail',
@@ -150,14 +154,32 @@ const routes: Array<RouteRecordRaw> = [
     component: () => import('@/views/customer/order/Checkout.vue'),
     meta: { requiresAuth: true }
   },
-
+   //评价页面
+  {
+    path: '/comments',
+    name: 'Comments',
+    component: () => import('@/views/customer/order/OrderComment.vue'),
+  },
   {
     path: '/rider/recommend',
     name: 'Recommend',
     component: () => import('@/views/rider/Recommend.vue'),
+
     meta: { requiresAuth: true }
   },
-
+  // 顾客店铺列表页
+  {
+    path: '/customer/shops',
+    name: 'CustomerShopList',
+    component: () => import('@/views/customer/shop/ShopListView.vue'),
+    props: route => ({ query: route.query })
+  },
+  {
+    path: '/customer/shops/:shopId', // 使用 :shopId 动态匹配店铺ID
+    name: 'CustomerShopProducts',
+    component: () => import('@/views/customer/shop/ShopProductsView.vue'),
+    props: true // 自动将路由参数 (shopId) 作为 props 传递给组件
+  },
 ]
 
 const router = createRouter({
