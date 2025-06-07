@@ -9,8 +9,8 @@
                 <div class="summary-left">
                     <n-avatar v-if="order.items" :src="order?.items[0].cover.origin" :size="200" />
                     <div class="info-list">
-                        <div class="store-name">{{ order.storeName }}</div>
-                        <div class="order-time">{{ order.crea }}</div>
+                        <div class="store-name">{{ order.shop }}</div>
+                        <div class="order-time">{{ order.createdAt }}</div>
                     </div>
                 </div>
 
@@ -85,12 +85,12 @@
 <script lang="ts" setup>
 import { computed, ref, onMounted } from 'vue'
 import Recommendation from './Recommendation.vue'
-import { useRoute } from 'vue-router'
-import { type OrderDetail, type RecommendItem, type OrderInfo, Status } from '@/types/order'
+import { useRoute, useRouter } from 'vue-router'
+import { type OrderDetail, type RecommendItem, type Order, Status } from '@/types/order'
 import { fetchOrderDetail } from '@/api/orders'
 
 
-const order = ref<OrderInfo>({
+const order = ref<Order>({
     id: "497f6eca-6276-4993-bfeb-53cbbbba6f08",
     status: Status.Delivering,
     createdAt: new Date("2019-08-24T14:15:22.123Z"),
@@ -148,7 +148,8 @@ const order = ref<OrderInfo>({
         tel: "string"
     }
 })
-const router = useRoute()
+const router = useRouter()
+const route = useRoute()
 
 // const loadData = async () => {
 //     try {
@@ -230,23 +231,24 @@ function handlePageChange(newPage: number) {
     page.value = newPage
 }
 
-const route = useRoute()
+
 const orderId = route.params.id || '12345678'
 
 // TODO: 功能按钮
-const evaluate = (order: OrderInfo) => {
+const evaluate = (order: Order) => {
+    alert('Not implemented yet')
+    router.push(`/comments`)
+}
+
+const buyAgain = (order: Order) => {
     alert('Not implemented yet')
 }
 
-const buyAgain = (order: OrderInfo) => {
+const feedback = (order: Order) => {
     alert('Not implemented yet')
 }
 
-const feedback = (order: OrderInfo) => {
-    alert('Not implemented yet')
-}
-
-function fetchOrder(arg0: string): OrderInfo | PromiseLike<OrderInfo | undefined> | undefined {
+function fetchOrder(arg0: string): Order | PromiseLike<Order | undefined> | undefined {
     throw new Error('Function not implemented.')
 }
 </script>

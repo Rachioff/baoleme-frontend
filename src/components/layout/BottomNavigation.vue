@@ -40,14 +40,9 @@ const navItems = ref([
     path: '/customer/order' 
   },
   { 
-    label: '购物车', 
-    icon: ShoppingCartOutlined, 
-    path: '/cart' 
-  },
-  { 
     label: '我的', 
     icon: UserOutlined, 
-    path: '/customer/profile' 
+    path: '/user/:userId' 
   }
 ]);
 

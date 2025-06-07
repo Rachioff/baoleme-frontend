@@ -1,6 +1,6 @@
 <template>
     <div class="order-card-wrapper">
-        <n-card class="mb-4" :title="order.storeName" hoverable>
+        <n-card class="mb-4" :title="order.shop" hoverable>
             <template #header-extra>
                 <n-tag type="info">{{ order.status }}</n-tag>
             </template>
@@ -8,13 +8,13 @@
                 <n-space align="start" :wrap="false" size="large">
                     <!-- 左侧：头像与店铺信息 -->
                     <div class="order-left">
-                        <n-avatar :size="80" :src="order.storeAvatar" />
+                        <n-avatar :size="80" :src="order.shop || null" />
                     </div>
 
                     <!-- 右侧：订单详情 -->
                     <div class="order-right">
-                        <div class="order-detail-time">下单时间：{{ order.time }}</div>
-                        <div class="order-items">{{ order.item.join('、') }}</div>
+                        <div class="order-detail-time">下单时间：{{ order.createdAt }}</div>
+                        <div class="order-items">{{ order.items.join('、') }}</div>
                         <div class="order-total">￥{{ order.total }}</div>
                     </div>
                 </n-space>
@@ -48,7 +48,7 @@
 <script setup lang="ts">
 import { ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
-import { Status, type OrderInfo, type OrderItem } from '@/types/order'
+import { Status, type Order, type OrderItem } from '@/types/order'
 import { useTokenStore } from '@/stores/token'
 
 const route = useRoute()
@@ -63,7 +63,7 @@ const isShowTimeline = (status: string) => {
 // 组件参数
 const { order } = defineProps({
     order: {
-        type: Object as () => OrderInfo,
+        type: Object as () => Order,
         required: true
     }
 })
@@ -114,25 +114,25 @@ const getOrderItem = (id: string) => {
 }
 
 // TODO：按钮逻辑
-const evaluate = (order: OrderInfo) => {
+const evaluate = (order: Order) => {
     // 跳转评价页面或弹出评价窗口
     console.log('评价', order)
     alert("Not implemented")
 }
 
-const viewInvoice = (order: OrderInfo) => {
+const viewInvoice = (order: Order) => {
     // 打开发票详情
     console.log('查看发票', order)
     alert("Not implemented")
 }
 
-const deleteOrder = (order: OrderInfo) => {
+const deleteOrder = (order: Order) => {
     // 弹出确认框并删除
     console.log('删除订单', order)
     alert("Not implemented")
 }
 
-const buyAgain = (order: OrderInfo) => {
+const buyAgain = (order: Order) => {
     // 跳转购买流程
     console.log('再次购买', order)
     alert("Not implemented")
