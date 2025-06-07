@@ -186,6 +186,62 @@ const routes: Array<RouteRecordRaw> = [
     component: () => import('@/views/customer/shop/ShopProductsView.vue'),
     props: true // 自动将路由参数 (shopId) 作为 props 传递给组件
   },
+
+  {
+  path: '/address/add',
+  name: 'AddressAdd',
+  component: () => import('@/views/AddressSelector.vue'),
+  meta: {
+    requiresAuth: true
+  }
+  },
+  {
+    path: '/address/new',
+    name: 'AddressNew',
+    component: () => import('@/views/customer/address/AddressForm.vue'),
+    meta: {
+      requiresAuth: true
+    }
+  },
+
+  // 管理员首页
+  {
+    path: '/admin',
+    redirect: '/admin/dashboard'
+  },
+  {
+    path: '/admin/dashboard',
+    name: 'AdminDashboard',
+    component: () => import('@/views/admin/AdminDashboard.vue'),
+    meta: { requiresAuth: true, role: 'admin' }
+  },
+  // 管理员查看店铺
+  {
+    path: '/admin/shops',
+    name: 'AdminShopReview',
+    component: () => import('@/views/admin/ShopReview.vue'),
+    meta: { requiresAuth: true, role: 'admin' } // 确保只有管理员能访问
+  },
+  {
+    path: '/admin/shops/:shopId/items',
+    name: 'AdminShopItemReview',
+    component: () => import('@/views/admin/ItemReview.vue'),
+    props: true, // 允许将 shopId 作为 prop 传递给组件
+    meta: { requiresAuth: true, role: 'admin' }
+  },
+  {
+    path: '/admin/shops/:shopId/comments',
+    name: 'AdminShopCommentReview',
+    component: () => import('@/views/admin/CommentReview.vue'),
+    props: true,
+    meta: { requiresAuth: true, role: 'admin' }
+  },
+  {
+    path: '/admin/orders',
+    name: 'AdminOrderManagement',
+    component: () => import('@/views/admin/OrderManagement.vue'),
+    meta: { requiresAuth: true, role: 'admin' }
+  },
 ]
 
 const router = createRouter({
