@@ -1,12 +1,7 @@
 <template>
   <div class="bottom-navigation">
-    <div 
-      v-for="(item, index) in navItems" 
-      :key="index"
-      class="nav-item"
-      :class="{ active: isActive(item.path) }"
-      @click="navigate(item.path)"
-    >
+    <div v-for="(item, index) in navItems" :key="index" class="nav-item" :class="{ active: isActive(item.path) }"
+      @click="navigate(item.path)">
       <n-icon size="20">
         <component :is="item.icon" />
       </n-icon>
@@ -18,42 +13,75 @@
 <script setup lang="ts">
 import { ref, computed } from 'vue';
 import { useRouter, useRoute } from 'vue-router';
-import { 
+import {
   HomeFilled,
   FileTextOutlined,
   ShoppingCartOutlined,
   UserOutlined
 } from '@vicons/antd';
+import { useTokenStore } from '@/stores/token';
 
 const router = useRouter();
 const route = useRoute();
 
 const navItems = ref([
-  { 
-    label: '首页', 
-    icon: HomeFilled, 
-    path: '/customer/home' 
+  {
+    label: '首页',
+    icon: HomeFilled,
+    path: [
+      '/customer/home',
+      '/merchant/shops',
+      '/rider/recommend'
+    ]
   },
-  { 
-    label: '订单', 
-    icon: FileTextOutlined, 
-    path: '/customer/order' 
+  {
+    label: '订单',
+    icon: FileTextOutlined,
+    path: [
+      '/customer/order',
+      '/merchant/order',
+      '/rider/recommend'
+    ]
   },
-  { 
-    label: '我的', 
-    icon: UserOutlined, 
-    path: '/user/:userId' 
+  {
+    label: '我的',
+    icon: UserOutlined,
+    path: [
+      `/user/${useTokenStore().$id}`,
+      `/user/${useTokenStore().$id}`,
+      `/user/${useTokenStore().$id}`
+    ]
   }
 ]);
 
-const isActive = (path: string) => {
+const isActive = (path: string[]) => {
   // 简单匹配或者更复杂的前缀匹配
-  return route.path === path || route.path.startsWith(path);
+  const offset = ref(0)
+  switch (useTokenStore().role) {
+    case 'customer':
+      offset.value = 0;
+    case 'merchant':
+      offset.value = 1;
+    case 'rider':
+      offset.value = 2;
+    default:
+  }
+  return route.path === path[offset.value] || route.path.startsWith(path[offset.value]);
 };
 
-const navigate = (path: string) => {
-  if (route.path !== path) {
-    router.push(path);
+const navigate = (path: string[]) => {
+  const offset = ref(1)
+  switch (useTokenStore().role) {
+    case 'customer':
+      offset.value = 0;
+    case 'merchant':
+      offset.value = 1;
+    case 'rider':
+      offset.value = 2;
+    default:
+  }
+  if (route.path !== path[offset.value]) {
+    router.push(path[offset.value]);
   }
 };
 </script>

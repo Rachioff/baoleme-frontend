@@ -1,20 +1,18 @@
 <template>
     <div class="order-card-wrapper">
-        <n-card class="mb-4" :title="order.shop" hoverable>
+        <n-card class="mb-4" :title="shopInfo.name || '未知店铺'" hoverable>
             <template #header-extra>
-                <n-tag type="info">{{ order.status }}</n-tag>
+                <n-tag type="info">{{ order.status ||  '📍未知状态'}}</n-tag>
             </template>
             <div class="order-card-info" @click="getOrderItem(order.id)">
                 <n-space align="start" :wrap="false" size="large">
-                    <!-- 左侧：头像与店铺信息 -->
                     <div class="order-left">
-                        <n-avatar :size="80" :src="order.shop || null" />
+                        <n-avatar :size="120" :src="shopInfo.cover && shopInfo.cover.origin" />
                     </div>
 
-                    <!-- 右侧：订单详情 -->
                     <div class="order-right">
                         <div class="order-detail-time">下单时间：{{ order.createdAt }}</div>
-                        <div class="order-items">{{ order.items.join('、') }}</div>
+                        <div class="order-items">{{ order.items.map(item => item.name).join('、') }}</div>
                         <div class="order-total">￥{{ order.total }}</div>
                     </div>
                 </n-space>
@@ -26,7 +24,7 @@
                     <n-timeline horizontal>
                         <n-timeline-item v-for="(step, index) in steps" :key="index"
                             :type="index < currentStep ? 'success' : (index === currentStep ? 'warning' : 'default')"
-                            :title="step.title" :content="step.content" :time="step.time" />
+                            :title="step.title" :content="step.content"/>
                     </n-timeline>
                 </template>
 
@@ -46,10 +44,12 @@
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue'
+import { onMounted, ref } from 'vue'
+import { NTag, NCard } from 'naive-ui'
 import { useRoute, useRouter } from 'vue-router'
 import { Status, type Order, type OrderItem } from '@/types/order'
 import { useTokenStore } from '@/stores/token'
+import type { ShopInfo } from '@/types/shop'
 
 const route = useRoute()
 const router = useRouter()
@@ -68,36 +68,58 @@ const { order } = defineProps({
     }
 })
 
+const getShopAvator = async (shopId: string) => {
+    try {
+        const shop = fetchShopInfo(shopId) as unknown as ShopInfo
+        return shop.cover.origin
+    } catch (error) {
+        return 'https://picsum.photos/300/300?random=1'
+    }
+}
+const getShopInfo = async (shopId: string): Promise<ShopInfo> => {
+    return fetchShopInfo(shopId) as unknown as ShopInfo
+}
+
+const shopInfo = ref<ShopInfo>({} as ShopInfo)
+onMounted(async () => {
+    try {
+        shopInfo.value =await getShopInfo(order.shop!)
+    } catch (error) {
+        shopInfo.value = {} as ShopInfo
+    }
+    
+})
+
 // 定义进度条状态数据
 const steps = [
     {
         title: '下单成功',
         content: '用户已提交订单',
-        time: '2025-05-19 15:00',
+        // time: '2025-05-19 15:00',
         type: 'success',
     },
     {
         title: '商家接单',
         content: '商家已确认并准备制作',
-        time: '2025-05-19 15:02',
+        // time: '2025-05-19 15:02',
         type: 'info',
     },
     {
         title: '配送中',
         content: '骑手正在配送',
-        time: '2025-05-19 15:10',
+        // time: '2025-05-19 15:10',
         type: 'info',
     },
     {
         title: '送达',
         content: '订单已送达用户手中',
-        time: '',
+        // time: '',
         type: 'warning',
     },
     {
         title: '完成',
         content: '订单流程已结束',
-        time: '',
+        // time: '',
         type: 'default',
     }
 ]
@@ -115,9 +137,7 @@ const getOrderItem = (id: string) => {
 
 // TODO：按钮逻辑
 const evaluate = (order: Order) => {
-    // 跳转评价页面或弹出评价窗口
-    console.log('评价', order)
-    alert("Not implemented")
+    router.push({ path: `/comments/${order.id}` })
 }
 
 const viewInvoice = (order: Order) => {
@@ -139,6 +159,10 @@ const buyAgain = (order: Order) => {
 }
 
 
+
+function fetchShopInfo(shopId: string) {
+    throw new Error('Function not implemented.')
+}
 </script>
 
 <style scoped>
@@ -178,6 +202,7 @@ const buyAgain = (order: Order) => {
 
 .order-left {
     display: flex;
+    flex-direction: column;
     align-items: center;
     gap: 12px;
     min-width: 160px;

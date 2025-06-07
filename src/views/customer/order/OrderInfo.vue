@@ -1,6 +1,13 @@
 <template>
     <div class="order-info-container">
-        <h1 class="title">订单详情</h1>
+        <div class="top-bar">
+            <n-button text @click="goBack">
+                <n-icon size="24">
+                    <arrow-back />
+                </n-icon>
+            </n-button>
+            <h1 class="title">订单详情</h1>
+        </div>
 
         <!-- 概要部分 -->
         <n-card class="summary-card">
@@ -9,18 +16,18 @@
                 <div class="summary-left">
                     <n-avatar v-if="order.items" :src="order?.items[0].cover.origin" :size="200" />
                     <div class="info-list">
-                        <div class="store-name">{{ order.shop }}</div>
+                        <div class="store-name">{{ shopInfo.name || "未知店铺" }}</div>
                         <div class="order-time">{{ order.createdAt }}</div>
                     </div>
                 </div>
 
                 <!-- 右侧详情 -->
                 <div class="summary-right">
-                    <div class="store-link">店铺链接 →</div>
+                    <div class="store-link" @click="goToShop(order.shop!)">店铺链接 →</div>
                     <div class="detail-wrapper">
                         <div class="actions">
                             <n-button strong size="small" @click="evaluate(order)">评价</n-button>
-                            <n-button strong size="small" secondary @click="buyAgain(order)">再次购买</n-button>
+                            <n-button strong size="small" @click="buyAgain(order)">再次购买</n-button>
                             <n-button strong size="small" tertiary type="error" @click="feedback(order)">反馈</n-button>
                         </div>
 
@@ -38,7 +45,8 @@
                             <n-collapse-item title="收货信息" name="2">
                                 <p>收货人：{{ order.customer }}</p>
                                 <p>联系电话：{{ order.customerAddress.tel }}</p>
-                                <p>地址：{{ order.customerAddress.address }} {{ order.customerAddress.city }} {{ order.customerAddress.district }}
+                                <p>地址：{{ order.customerAddress.address }} {{ order.customerAddress.city }} {{
+                                    order.customerAddress.district }}
                                     {{ order.customerAddress.address }}</p>
                             </n-collapse-item>
 
@@ -51,7 +59,7 @@
                                 <p>店铺信息：</p>
                             </n-collapse-item>
                             <n-collapse-item title="其它信息" name="4">
-                                <p> 备注： {{ order.note }} </p>
+                                <p> 备注： {{ order.note || "无" }} </p>
                             </n-collapse-item>
                         </n-collapse>
                     </div>
@@ -86,8 +94,10 @@
 import { computed, ref, onMounted } from 'vue'
 import Recommendation from './Recommendation.vue'
 import { useRoute, useRouter } from 'vue-router'
-import { type OrderDetail, type RecommendItem, type Order, Status } from '@/types/order'
-import { fetchOrderDetail } from '@/api/orders'
+import { type RecommendItem, type Order, Status } from '@/types/order'
+import { useDialog, useMessage, NButton, NIcon, NBackTop } from 'naive-ui'
+import { ArrowBack } from '@vicons/ionicons5'
+import type { ShopInfo } from '@/types/shop'
 
 
 const order = ref<Order>({
@@ -110,9 +120,19 @@ const order = ref<Order>({
                 origin: "string",
                 thumbnail: "string"
             },
-            quantity: 0,
-            price: 0,
-        }
+            quantity: 1,
+            price: 10,
+        },
+        {
+            id: "497f6eca-6276-4993-bfeb-53cbbbba6f08",
+            name: "string",
+            cover: {
+                origin: "string",
+                thumbnail: "string"
+            },
+            quantity: 2,
+            price: 20,
+        },
     ],
     deliveryFee: 0,
     total: 32,
@@ -151,6 +171,23 @@ const order = ref<Order>({
 const router = useRouter()
 const route = useRoute()
 
+const goBack = () => {
+    router.go(-1)
+}
+const goToShop = (shopId: string) => {
+    router.push(`/customer/shops/${shopId}`)
+}
+const getShopInfo = async (shopId: string): Promise<ShopInfo> => {
+    return fetchShopInfo(shopId) as unknown as ShopInfo
+}
+const shopInfo = ref<ShopInfo>({} as ShopInfo)
+onMounted(async () => {
+    try {
+        shopInfo.value = await getShopInfo(order.value.shop!)
+    } catch (error) {
+        shopInfo.value = {} as ShopInfo
+    }
+})
 // const loadData = async () => {
 //     try {
 //         const orderId = router.params.id as unknown as number
@@ -163,24 +200,7 @@ const route = useRoute()
 // onMounted(() => {
 //     loadData()
 // })
-// const order = ref<OrderDetail>({
-//     id: 12345678,
-//     storeName: '麦当劳',
-//     storeAvatar: 'https://picsum.photos/seed/avatar/60',
-//     orderTime: '2025-05-19 13:00',
-//     time: '2025-05-19 13:00',
-//     total: 28.5,
-//     items: [],
-//     discount: 3.5,
-//     payTime: '2025-05-19 13:05',
-//     deliveryTime: '2025-05-19 13:30',
-//     receiveTime: '2025-05-19 13:40',
-//     status: '已完成',
-//     address: '北京市海淀区中关村大街1号',
-//     phone: '13800138000',
-//     remark: '不要辣'
-// })
-// m模拟数据
+
 const sampleProduct = ref<RecommendItem[]>([{
     id: 1,
     image: 'https://picsum.photos/300/300?random=1',
@@ -236,12 +256,30 @@ const orderId = route.params.id || '12345678'
 
 // TODO: 功能按钮
 const evaluate = (order: Order) => {
-    alert('Not implemented yet')
-    router.push(`/comments`)
+    router.push(`/comments/${order.id}`)
 }
 
 const buyAgain = (order: Order) => {
-    alert('Not implemented yet')
+    console.log(`加入购物车：${order.note}`)
+    // TODO: 调用购物车逻辑
+    let dialog = useDialog()
+    let message = useMessage()
+
+    dialog.success({
+        title: '加入购物车',
+        content: '你确定？',
+        positiveText: '确定',
+        negativeText: '不确定',
+        draggable: true,
+        onPositiveClick: () => {
+            message.success('确定')
+            alert("Not implemented")
+        },
+        onNegativeClick: () => {
+            message.error('不确定')
+            alert("Not implemented")
+        }
+    })
 }
 
 const feedback = (order: Order) => {
@@ -251,11 +289,23 @@ const feedback = (order: Order) => {
 function fetchOrder(arg0: string): Order | PromiseLike<Order | undefined> | undefined {
     throw new Error('Function not implemented.')
 }
+
+function fetchShopInfo(shopId: string): unknown {
+    throw new Error('Function not implemented.')
+}
 </script>
 
 <style scoped>
 .order-info-container {
     padding: 16px;
+}
+
+.top-bar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px 0;
+  flex-shrink: 0;
 }
 
 .title {
