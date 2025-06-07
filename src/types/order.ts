@@ -2,7 +2,7 @@ import type { Address } from './address'
 /**
  * 订单
  */
-export interface OrderList {
+export interface Order {
     canceledAt: Date | null;
     createdAt: Date;
     paidAt: Date | null;
@@ -66,72 +66,21 @@ export enum Status {
     Unpaid = "unpaid",
 }
 
-export interface OrderInfo {
-    /**
-     * 取消时间，订单状态变为 canceled 的时间
-     */
-    canceledAt: Date | null;
-    /**
-     * 创建时间
-     */
-    createdAt: Date | null;
-    /**
-     * 客户 ID
-     */
-    customer?: null | string;
-    customerAddress: Address;
-    /**
-     * 配送开始时间，订单状态由 prepared 变为 delivering 的时间
-     */
-    deliveredAt?: Date | null;
-    delivery?: null | Delivery;
-    /**
-     * 配送费，分
-     */
-    deliveryFee: number;
-    /**
-     * 配送完成时间，订单状态由 delivering 变为 delivered 的时间
-     */
-    finishedAt?: Date | null;
-    /**
-     * 订单 ID
-     */
-    id: string;
-    /**
-     * 商品列表
-     */
-    items?: Item[];
-    /**
-     * 备注
-     */
-    note?: string;
-    /**
-     * 付款时间，订单状态由 unpaid 变为 preparing 的时间
-     */
-    paidAt?: Date | null;
-    /**
-     * 准备完成时间，订单状态由 preparing 变为 prepared 的时间
-     */
-    preparedAt: Date | null;
-    /**
-     * 骑手 ID
-     */
-    rider?: null | string;
-    /**
-     * 店铺 ID
-     */
-    shop?: null | string;
-    shopAddress: Address;
-    /**
-     * 状态
-     */
-    status: Status;
-    /**
-     * 总付款，分
-     */
-    total?: number;
-    [property: string]: any;
-}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 // api 接口数据模型
 

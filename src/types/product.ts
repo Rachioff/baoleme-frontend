@@ -1,23 +1,5 @@
-// src/types/product.ts
+import type { imgURL } from "./img";
 
-/**
- * 图像链接
- */
-export interface ImageUrl {
-  /**
-   * 原始图像的 URL
-   */
-  origin: string;
-  /**
-   * 缩略图的 URL
-   */
-  thumbnail: string;
-  [property: string]: any;
-}
-
-/**
- * 商品核心资料 (用于创建和修改商品资料API的Body)
- */
 export interface ProductProfileData {
   /**
    * 商品是否上架
@@ -70,7 +52,7 @@ export interface ProductData extends ProductProfileData {
   /**
    * 商品封面图
    */
-  cover: ImageUrl;
+  cover: imgURL;
   /**
    * 评分，0~50 (API 定义)
    */
@@ -89,7 +71,7 @@ export interface ProductImageData {
   /**
    * 商品封面图
    */
-  cover: ImageUrl;
+  cover: imgURL;
   [property: string]: any;
 }
 
@@ -151,9 +133,33 @@ export type DeleteProductResponse = void;
 
 export interface Product {
   image: string
+  id: string
+  shopId: string
+  createdAt: string
   name: string
-  category: string
+  description: string
+  available: boolean
+  stockout: boolean
+  priceWithoutPromotion: number
+  categories: string[]
+  cover: {
+    origin: string
+    thumbnail: string
+  }
   rating: number
   price: number
   discount?: string
+  sale: number
+}
+
+export interface RecommendedProductsParams {
+  p?: number 
+  pn?: number
+  q?: string 
+  c?: string[] 
+  r?: number 
+  s?: string 
+  a?: string 
+  min_p?: number 
+  max_p?: number 
 }

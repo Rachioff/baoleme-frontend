@@ -62,6 +62,18 @@ const routes: Array<RouteRecordRaw> = [
     name: 'OrderDetail',
     component: () => import('@/views/customer/order/OrderInfo.vue')
   },
+      // 搜索页面
+  {
+    path: '/search',
+    name: 'Search',
+    component: () => import('@/views/customer/home/Search.vue'),
+  },
+  // 搜索结果页面
+  {
+    path: '/search/result',
+    name: 'SearchResult',
+    component: () => import('@/views/customer/home/SearchResult.vue'),
+  },
   {
     path: '/merchant/shops', // 商户的店铺列表
     name: 'MerchantShopList',
@@ -133,12 +145,19 @@ const routes: Array<RouteRecordRaw> = [
   {path: '/merchant/shop/{id}/comments',
     name: 'ShopCommentsList',
     component: () => import('@/views/merchant/shop/ShopCommentList.vue'),
-    meta: { requiresAuth: true, role: 'merchant' }},
+    meta: { requiresAuth: true, role: 'merchant' }
+  },
   {
     path: '/merchant/products/:productId',
     name: 'MerchantProductDetail',
     component: () => import('@/views/merchant/product/ProductDetail.vue'),
     props: true, // productId 会被传递
+    meta: { requiresAuth: true, role: 'merchant' }
+  },
+  {
+    path: '/merchant/order',
+    name: 'MerchantOrder',
+    component: () => import('@/views/customer/order/Order.vue'),
     meta: { requiresAuth: true, role: 'merchant' }
   },
   {
@@ -155,7 +174,7 @@ const routes: Array<RouteRecordRaw> = [
   },
    //评价页面
   {
-    path: '/comments',
+    path: '/comments/:id',
     name: 'Comments',
     component: () => import('@/views/customer/order/OrderComment.vue'),
   },
@@ -178,6 +197,79 @@ const routes: Array<RouteRecordRaw> = [
     name: 'CustomerShopProducts',
     component: () => import('@/views/customer/shop/ShopProductsView.vue'),
     props: true // 自动将路由参数 (shopId) 作为 props 传递给组件
+  },
+
+  {
+  path: '/address/add',
+  name: 'AddressAdd',
+  component: () => import('@/views/AddressSelector.vue'),
+  meta: {
+    requiresAuth: true
+  }
+  },
+  {
+    path: '/address/new',
+    name: 'AddressNew',
+    component: () => import('@/views/customer/address/AddressForm.vue'),
+    meta: {
+      requiresAuth: true
+    }
+  },
+
+  // 管理员首页
+  {
+    path: '/admin',
+    redirect: '/admin/dashboard'
+  },
+  {
+    path: '/admin/dashboard',
+    name: 'AdminDashboard',
+    component: () => import('@/views/admin/AdminDashboard.vue'),
+    meta: { requiresAuth: true, role: 'admin' }
+  },
+  // 管理员查看店铺
+  {
+    path: '/admin/shops',
+    name: 'AdminShopReview',
+    component: () => import('@/views/admin/ShopReview.vue'),
+    meta: { requiresAuth: true, role: 'admin' } // 确保只有管理员能访问
+  },
+  {
+    path: '/admin/shops/:shopId/items',
+    name: 'AdminShopItemReview',
+    component: () => import('@/views/admin/ItemReview.vue'),
+    props: true, // 允许将 shopId 作为 prop 传递给组件
+    meta: { requiresAuth: true, role: 'admin' }
+  },
+  {
+    path: '/admin/shops/:shopId/comments',
+    name: 'AdminShopCommentReview',
+    component: () => import('@/views/admin/CommentReview.vue'),
+    props: true,
+    meta: { requiresAuth: true, role: 'admin' }
+  },
+  {
+    path: '/admin/orders',
+    name: 'AdminOrderManagement',
+    component: () => import('@/views/admin/OrderManagement.vue'),
+    meta: { requiresAuth: true, role: 'admin' }
+  },
+  // 搜索页面
+  {
+    path: '/customer/search',
+    name: 'Search',
+    component: () => import('@/views/customer/home/Search.vue')
+  },
+  {
+    path: '/customer/search/result',
+    name: 'SearchResult',
+    component: () => import('@/views/customer/home/SearchResult.vue')
+  },
+  // 配送地图
+  {
+    path: '/order/delivery-map',
+    name: 'DeliveryMap',
+    component: () => import('@/views/DeliveryMap.vue')
   },
 ]
 

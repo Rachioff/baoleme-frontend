@@ -44,6 +44,11 @@ const showBottomNav = computed(() => {
     'UpdateEmail',
     'VerifyUpdateEmail',
     'CustomerShopProducts',
+    'AdminDashboard',
+    'AdminShopReview',
+    'AdminShopItemReview',
+    'AdminShopCommentReview',
+    'AdminOrderManagement',
     
   ];
   if (route.path === '/' || (route.name && hideNavRouteNames.includes(route.name as string))) {
