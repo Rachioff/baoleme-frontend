@@ -18,13 +18,16 @@
 
     <div class="order-list mt-4">
       <!-- 订单卡片 -->
-      <n-space vertical :size="12" class="mt-4">
-        <OrderCard v-for="order in filteredOrders" :key="order.id" :order="order" />
-      </n-space>
+       <n-space vertical :size="12" class="mt-4">
+          <OrderCard v-for="order in filteredOrders" :key="order.id" :order="order" />
+        </n-space>
+      <infinite-scroll-list :items="orders" :load-more="loadMoreOrders" :is-loading="isLoading" :has-more="hasMore"
+        item-key="id" class="order-scroll-list">
+      </infinite-scroll-list>
+
     </div>
-    <p v-if="isTimeOut" class="no-orders">加载超时，重试</p>
+    <p v-if="isTimeOut" class="no-orders" style="justify-self: center;">加载超时，重试</p>
     <div class="pagination-wrapper mt-4">
-      <!-- 分页 Pagination -->
       <n-pagination v-model:page="page" :page-count="pageCount" :page-size="pageSize" @update:page="handlePageChange" />
     </div>
   </n-page>
@@ -46,59 +49,66 @@
 <script setup lang="ts">
 import { ref, computed, watch, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
-import { NTabs, NTabPane, NSpace } from 'naive-ui'
+import { NTabs, NTabPane, NSpace, useMessage } from 'naive-ui'
 import OrderCard from '@/components/card/OrderCard.vue'
 import { SearchOutlined } from '@vicons/antd'
-import { Status, type OrderInfo, type OrderItem, type OrderList } from '@/types/order' // 导入数据类型
-import { fetchCustomerOrderList, fetchShopOrderList, fetchRiderOrderList} from '@/api/orders'
+import { Status, type Order } from '@/types/order' // 导入数据类型
+import { fetchCustomerOrderList, fetchShopOrderList, fetchRiderOrderList } from '@/api/orders'
 import { useTokenStore } from '@/stores/token'
+import InfiniteScrollList from '@/components/common/InfiniteScrollList.vue'
 
 const route = useRoute()
 const router = useRouter()
 
 // 加载数据
-// const orders = ref<OrderItem[]>([])
+const isLoading = ref(false)
+const hasMore = ref(true)
+const currentPage = ref(1)
+const itemsPerPage = 5
+
 const total = ref(0)
 const page = ref(2)
 const pageSize = 5
 const status = ref<Status | null>(null)
 
+const message = useMessage()
+
 const isTimeOut = ref(false)
-const orders =  ref<OrderList[]>([])
+// const orders =  ref<OrderList[]>([])
 
-const loadData = async () => {
-  try {
-    // TODO 这几个api其实完全一样
-    switch (useTokenStore().role) {
-      case "customer":
-        orders.value = await fetchCustomerOrderList(page.value, pageSize, status.value as string)
-        break;
-      case "merchant":
-        orders.value = await fetchShopOrderList(page.value, pageSize, status.value as string, useTokenStore().userId as string)
-        break;
-      // 不知何用
-      // case "admin":
-      //   orders.value = await fetchOrders(page.value, pageSize, status.value as string)
-      case "rider":
-        orders.value = await fetchRiderOrderList(page.value, pageSize, status.value as string)
-      default:
-        break;
-    }
-    console.log("switch pass!")
-  } catch (error) {
-    alert("获取订单失败");
-    console.error('Failed to load orders:', error)
-  }
-}
+// const loadData = async () => {
+//   try {
+//     // TODO 这几个api其实完全一样
+//     switch (useTokenStore().role) {
+//       case "customer":
+//         orders.value = await fetchCustomerOrderList(page.value, pageSize, status.value as string)
+//         break;
+//       case "merchant":
+//         orders.value = await fetchShopOrderList(page.value, pageSize, status.value as string, useTokenStore().userId as string)
+//         break;
+//       // 不知何用
+//       // case "admin":
+//       //   orders.value = await fetchOrders(page.value, pageSize, status.value as string)
+//       case "rider":
+//         orders.value = await fetchRiderOrderList(page.value, pageSize, status.value as string)
+//       default:
+//         break;
+//     }
+//     console.log("switch pass!")
+//   } catch (error) {
+//     alert("获取订单失败");
+//     console.error('Failed to load orders:', error)
+//   }
+// }
 
-onMounted(() => {
-  loadData();
-  setTimeout(() => {
-    if (orders.value.length === 0) {
-      isTimeOut.value = true
-    }
-  }, 5000)
-})
+// onMounted(() => {
+//   loadData();
+//   setTimeout(() => {
+//     if (orders.value.length === 0) {
+//       isTimeOut.value = true
+//     }
+//   }, 5000)
+// })
 // TODO :模拟订单数据
 // const orders = ref([
 //   {
@@ -109,7 +119,7 @@ onMounted(() => {
 //     items: ['米线', '蛋炒饭'],
 //     total: 29,
 //     storeAvatar: 'https://picsum.photos/seed/1/200/200',
-//     orderTime: '2025-05-17 11:23'
+//     orderTime: '2025-05-17 11:23',
 //   },
 //   {
 //     id: 2,
@@ -202,12 +212,119 @@ onMounted(() => {
 //     orderTime: '2025-05-10 17:55'
 //   }
 // ])
+const orders = ref<Order[]>([])
 
+// 模拟 API 请求获取店铺数据，后续可删
+const fetchMockOrders = (page: number, limit: number): Promise<Order[]> => {
+  return new Promise((resolve) => {
+    console.log(`模拟请求第 ${page} 页店铺数据，每页 ${limit} 条`)
+    setTimeout(() => {
+      const newOrders: Order[] = []
+      const totalMockItems = 12
+      const startIndex = (page - 1) * limit
 
+      if (startIndex >= totalMockItems) {
+        resolve([])
+        return
+      }
+
+      for (let i = 0; i < limit; i++) {
+        const currentIndex = startIndex + i
+        if (currentIndex >= totalMockItems) break
+
+        const orderId = `order-${currentIndex + 1}`
+        newOrders.push({
+          id: "497f6eca-6276-4993-bfeb-53cbbbba6f08",
+          status: Status.Delivering,
+          createdAt: new Date("2019-08-24T14:15:22.123Z"),
+          paidAt: new Date("2019-08-24T14:15:22.123Z"),
+          preparedAt: new Date("2019-08-24T14:15:22.123Z"),
+          deliveredAt: new Date("2019-08-24T14:15:22.123Z"),
+          finishedAt: new Date("2019-08-24T14:15:22.123Z"),
+          canceledAt: new Date("2019-08-24T14:15:22.123Z"),
+          customer: "0ac6320b-fa4d-4235-8d23-413a2b863bad",
+          shop: "06d34de1-b0bd-4e60-bd25-222980128ed1",
+          rider: "a197bfad-7b25-473e-bd10-519eeb8049dd",
+          items: [
+            {
+              id: "497f6eca-6276-4993-bfeb-53cbbbba6f08",
+              name: "string",
+              cover: {
+                origin: "string",
+                thumbnail: "string"
+              },
+              quantity: 0,
+              price: 0,
+            }
+          ],
+          deliveryFee: 0,
+          total: 32,
+          note: "string",
+          delivery: {
+            latitude: 0,
+            longitude: 0
+          },
+          shopAddress: {
+            id: '1',
+            isDefault: true,
+            coordinate: [
+              0
+            ],
+            province: "北京",
+            city: "北京",
+            district: "海淀区",
+            address: "学院路37号北京航空航天大学学生1公寓邮局旁外卖柜",
+            name: "string",
+            tel: "string"
+          },
+          customerAddress: {
+            id: '2',
+            isDefault: false,
+            coordinate: [
+              0
+            ],
+            province: "北京",
+            city: "北京",
+            district: "海淀区",
+            address: "学院路37号北京航空航天大学学生1公寓邮局旁外卖柜",
+            name: "string",
+            tel: "string"
+          }
+        })
+      }
+      resolve(newOrders)
+    }, 800)
+  })
+}
+
+const loadMoreOrders = async () => {
+  if (isLoading.value || !hasMore.value) return
+  isLoading.value = true
+  try {
+    const newItems = await fetchMockOrders(currentPage.value, itemsPerPage)
+    if (newItems.length > 0) {
+      orders.value.push(...newItems)
+      currentPage.value++
+      console.log(orders)
+      console.log(currentPage.value)
+      console.log("zheshi1 shuju")
+    } else {
+      hasMore.value = false
+    }
+  } catch (error) {
+    console.error('加载店铺失败:', error)
+    message.error('加载店铺列表失败，请稍后重试')
+  } finally {
+    isLoading.value = false
+  }
+}
 const currentTab = ref('all')
 
 const filteredOrders = computed(() => {
-  if (currentTab.value === 'all') return orders.value
+  if (currentTab.value === 'all') {
+    console.log("filtered")
+    return orders.value
+  }
   if (currentTab.value === 'pending') {
     return orders.value.filter(order => order.status === Status.Prepared)
   }
@@ -315,5 +432,12 @@ function handlePageChange(newPage: number) {
   padding-bottom: 64px;
   min-height: 10vh;
   box-sizing: border-box;
+}
+
+.order-scroll-list {
+  /* 如果希望滚动列表有固定高度 */
+  /* height: calc(100vh - 180px); */
+  /* 减去 PageHeader 和其他可能的间距 */
+  /* overflow-y: auto; */
 }
 </style>
