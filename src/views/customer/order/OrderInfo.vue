@@ -71,6 +71,16 @@
         <n-card class="feedback-card">
             <p>如有问题，请点击反馈或查看订单权益。</p>
         </n-card>
+        <n-card class="map-container" v-if="order.status === Status.Delivering">
+            <DeliveryMap v-if="order.status === Status.Delivering" 
+            :start-longitude="order.shopAddress.coordinate[0]" 
+            :start-latitude="order.shopAddress.coordinate[1]"
+            :current-longitude="order.shopAddress.coordinate[0]"
+            :current-latitude="order.shopAddress.coordinate[1]"
+            :end-longitude="order.customerAddress.coordinate[0]"
+            :end-latitude="order.customerAddress.coordinate[1]"
+            />
+        </n-card>
 
         <!-- 商品推荐 -->
         <n-card title="为你推荐" class="recommend-card">
@@ -95,9 +105,10 @@ import { computed, ref, onMounted } from 'vue'
 import Recommendation from './Recommendation.vue'
 import { useRoute, useRouter } from 'vue-router'
 import { type RecommendItem, type Order, Status } from '@/types/order'
-import { useDialog, useMessage, NButton, NIcon, NBackTop } from 'naive-ui'
+import { useDialog, useMessage, NButton, NIcon, NBackTop, NCard } from 'naive-ui'
 import { ArrowBack } from '@vicons/ionicons5'
 import type { ShopInfo } from '@/types/shop'
+import DeliveryMap from '@/views/DeliveryMap.vue'
 
 
 const order = ref<Order>({
@@ -376,6 +387,13 @@ function fetchShopInfo(shopId: string): unknown {
     margin-bottom: 16px;
     font-size: 14px;
     color: #666;
+}
+
+.map-container {
+    margin-top: auto;
+    margin-bottom: auto;
+    width: 100%;
+    aspect-ratio: 16 / 9;
 }
 
 .recommend-card-container {
