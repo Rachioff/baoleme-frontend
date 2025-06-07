@@ -195,7 +195,7 @@ const routes: Array<RouteRecordRaw> = [
     meta: {
       requiresAuth: true
     }
-  }
+  },
 
   // 管理员首页
   {
