@@ -195,7 +195,7 @@ const handleItemClick = (productId: string) => {
 
 const goToCheckout = () => {
   if (cartStore.info?.settlable) {
-    router.push({ name: 'Checkout' });
+    router.push({ name: 'Checkout', params: { shopId } });
   }
 };
 
