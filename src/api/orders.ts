@@ -39,7 +39,7 @@ export async function fetchCustomerOrderList(page: number, pageSize: number, s: 
   return res.data as Order[]
 }
 
-export async function fetchShopOrderList(page: number, pageSize: number, s: string, id: string) {
+export async function fetchShopOrderList(id: string, page: number, pageSize: number, s?: string) {
   const res = await axios.get(`${apiRoot}/orders/as-shop/${id}`, {
     params: {
       p: page,

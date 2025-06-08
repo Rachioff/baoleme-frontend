@@ -24,7 +24,7 @@
             <ShopItemCategoryView v-if="shop" :key="shop.id" />
             </n-tab-pane>
             <n-tab-pane name="orders" tab="订单处理">
-            <n-text>订单处理功能开发中...</n-text>
+              <ShopOrders v-if="shop" :shop-id="shop.id" />
             </n-tab-pane>
             <n-tab-pane name="statistics" tab="数据统计">
               <ShopStatistics v-if="shop" :shop-id="shop.id" />
@@ -147,6 +147,7 @@ import AMapLoader from '@amap/amap-jsapi-loader';
 import ProductList from './product/ProductList.vue';
 import ShopItemCategoryView from './ShopItemCategoryView.vue';
 import ShopStatistics from './shop/ShopStatistics.vue';
+import ShopOrders from './ShopOrders.vue';
 
 // --- 复用 ShopEditForm.vue 中的数据模型定义 ---
 interface 地址 {
@@ -363,6 +364,14 @@ const handleEditShop = () => {
     if (!shop.value) return;
     router.push(`/merchant/shops/edit/${shop.value.id}`);
 };
+
+// 解决切换 tab 回到概览页后地图消失的问题
+watch(currentTab, async (tab) => {
+  if (tab === 'overview' && shop.value && shop.value.address.coordinate[0] !== null && shop.value.address.coordinate[1] !== null) {
+    await nextTick();
+    renderShopMap();
+  }
+});
 
 </script>
 
