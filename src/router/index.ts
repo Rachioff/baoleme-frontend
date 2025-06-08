@@ -52,13 +52,13 @@ const routes: Array<RouteRecordRaw> = [
   },
   // 订单
   {
-    path: '/customer/order',
+    path: '/orders',
     name: 'CustomerOrder',
     component: () => import('@/views/customer/order/Order.vue')
   },
   // 订单详情，路由参数和api匹配
   {
-    path: '/customer/order/:id',
+    path: '/orders/:id',
     name: 'OrderDetail',
     component: () => import('@/views/customer/order/OrderInfo.vue')
   },
@@ -99,11 +99,8 @@ const routes: Array<RouteRecordRaw> = [
     path: '/order/getsubmit',
     name: 'GetOrderSubmit',
     component: () => import('@/views/customer/order/GetOrder.vue')
-  }, {
-    path: '/rider/order/:id',
-    name: 'OrderForRider',
-    component: () => import('@/views/customer/order/OrderInfoForRider.vue')
-  }, {
+  },
+  {
     path: '/merchant/shops/create', // 新增：创建店铺的路由
     name: 'MerchantShopCreate',
     component: () => import('@/views/merchant/ShopCreateForm.vue'),
@@ -167,7 +164,7 @@ const routes: Array<RouteRecordRaw> = [
   },
     // 下单页面
   {
-    path: '/checkout',
+    path: '/checkout/:shopId',
     name: 'Checkout',
     component: () => import('@/views/customer/order/Checkout.vue'),
     meta: { requiresAuth: true }
@@ -208,12 +205,20 @@ const routes: Array<RouteRecordRaw> = [
   }
   },
   {
+    path: '/address/select',
+    name: 'AddressSelect',
+    component: () => import('@/views/customer/address/AddressSelect.vue')
+  },
+  {
     path: '/address/new',
-    name: 'AddressNew',
+    name: 'AddressCreate',
+    component: () => import('@/views/customer/address/AddressForm.vue')
+  },
+  {
+    path: '/address/:id/edit',
+    name: 'AddressEdit',
     component: () => import('@/views/customer/address/AddressForm.vue'),
-    meta: {
-      requiresAuth: true
-    }
+    props: true
   },
 
   // 管理员首页
@@ -270,6 +275,19 @@ const routes: Array<RouteRecordRaw> = [
     path: '/order/delivery-map',
     name: 'DeliveryMap',
     component: () => import('@/views/DeliveryMap.vue')
+  },
+  // 新增：历史记录
+  {
+    path: '/customer/records',
+    name: 'CustomerRecords',
+    component: () => import('@/views/customer/RecordsView.vue'),
+    meta: { requiresAuth: true, role: 'customer' }
+  },
+  {
+    path: '/customer/favorites',
+    name: 'CustomerFavorites',
+    component: () => import('@/views/customer/FavoritesView.vue'),
+    meta: { requiresAuth: true, role: 'customer' }
   },
 ]
 

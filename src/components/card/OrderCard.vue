@@ -129,7 +129,7 @@ const currentStep = ref(3) // 当前步骤索引
 const getOrderItem = (id: string) => {
     console.log('获取订单详情', id)
     if (useTokenStore().role != 'rider') {
-        router.push({ path: '/customer/order/:id', query: { id } }) // 添加路由参数
+        router.push({ path: '/orders/:id', query: { id } }) // 添加路由参数
     } else if (useTokenStore().role == 'rider') {
         router.push({ path: '/rider/order/:id', query: { id } })
     }
