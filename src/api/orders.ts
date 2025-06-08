@@ -26,7 +26,7 @@ export async function fetchOrderDetail(orderId: string) {
   return res.data as Order
 }
 
-export async function fetchCustomerOrderList(page: number, pageSize: number, s: string) {
+export async function fetchCustomerOrderList(page: number, pageSize: number, s?: string) {
   const res = await axios.get(`${apiRoot}/orders/as-customer`, {
     params: {
       p: page,
@@ -52,7 +52,7 @@ export async function fetchShopOrderList(id: string, page: number, pageSize: num
   return res.data as Order[]
 }
 
-export async function fetchRiderOrderList(page: number, pageSize: number, s: string) {
+export async function fetchRiderOrderList(page: number, pageSize: number, s?: string) {
   const res = await axios.get(`${apiRoot}/orders/as-rider`, {
     params: {
       p: page,
